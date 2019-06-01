@@ -134,7 +134,7 @@ def root_locus(sys, kvect=None, xlim=None, ylim=None, plotstr='b' if int(matplot
 
         elif sisotool == True:
             f.axes[1].plot([root.real for root in start_mat], [root.imag for root in start_mat], 'm.', marker='s', markersize=8,zorder=20,label='gain_point')
-            f.suptitle("Clicked at: %10.4g%+10.4gj  gain: %10.4g  damp: %10.4g" % (start_mat[0][0].real, start_mat[0][0].imag, 1, -1 * start_mat[0][0].real / abs(start_mat[0][0])),fontsize = 12 if int(matplotlib.__version__[0]) == 1 else 10)
+            f.suptitle("pole: %10.4g%+10.4gj  gain: %10.4g" % (start_mat[0][0].real, start_mat[0][0].imag, 1, -1 * start_mat[0][0].real / abs(start_mat[0][0])),fontsize = 12 if int(matplotlib.__version__[0]) == 1 else 10)
             f.canvas.mpl_connect(
                 'button_release_event',partial(_RLClickDispatcher,sys=sys, fig=f,ax_rlocus=f.axes[1],plotstr=plotstr, sisotool=sisotool, bode_plot_params=kwargs['bode_plot_params'],tvect=kwargs['tvect']))
 
