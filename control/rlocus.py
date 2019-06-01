@@ -133,8 +133,8 @@ def root_locus(sys, kvect=None, xlim=None, ylim=None, plotstr='b' if int(matplot
                 'button_release_event', partial(_RLClickDispatcher,sys=sys, fig=f,ax_rlocus=f.axes[0],plotstr=plotstr))
 
         elif sisotool == True:
-            f.axes[1].plot([root.real for root in start_mat], [root.imag for root in start_mat], 'm.', marker='s', markersize=8,zorder=20,label='gain_point')
-            f.suptitle("pole: %10.4g%+10.4gj  gain: %10.4g" % (start_mat[0][0].real, start_mat[0][0].imag, 1, -1 * start_mat[0][0].real / abs(start_mat[0][0])),fontsize = 12 if int(matplotlib.__version__[0]) == 1 else 10)
+            f.axes[1].plot([root.real for root in start_mat], [root.imag for root in start_mat], 'm.', marker='x', markersize=8,zorder=20,label='gain_point')
+            f.suptitle("pole: %4.2f%+4.2fj  gain: %4.2f" % (start_mat[0][0].real, start_mat[0][0].imag, 1),fontsize = 12 if int(matplotlib.__version__[0]) == 1 else 10)
             f.canvas.mpl_connect(
                 'button_release_event',partial(_RLClickDispatcher,sys=sys, fig=f,ax_rlocus=f.axes[1],plotstr=plotstr, sisotool=sisotool, bode_plot_params=kwargs['bode_plot_params'],tvect=kwargs['tvect']))
 
@@ -478,10 +478,10 @@ def _RLFeedbackClicksPoint(event,sys,fig,ax_rlocus,sisotool=False):
     if abs(K.real) > 1e-8 and abs(K.imag / K.real) < gain_tolerance and event.inaxes == ax_rlocus.axes and K.real > 0.:
 
         # Display the parameters in the output window and figure
-        print("Clicked at %10.4g%+10.4gj gain %10.4g damp %10.4g" %
-              (s.real, s.imag, K.real, -1 * s.real / abs(s)))
-        fig.suptitle("Clicked at: %10.4g%+10.4gj  gain: %10.4g  damp: %10.4g" %
-                     (s.real, s.imag, K.real, -1 * s.real / abs(s)),fontsize = 12 if int(matplotlib.__version__[0]) == 1 else 10)
+        print("pole: %4.2f%+4.2fj  gain %4.2f" %
+              (s.real, s.imag, K.real))
+        fig.suptitle("pole: %4.2f%+4.2fj  gain: %4.2f" %
+                     (s.real, s.imag, K.real),fontsize = 12 if int(matplotlib.__version__[0]) == 1 else 10)
 
         # Remove the previous line
         _removeLine(label='gain_point',ax=ax_rlocus)
@@ -489,10 +489,10 @@ def _RLFeedbackClicksPoint(event,sys,fig,ax_rlocus,sisotool=False):
         # Visualise clicked point, display all roots for sisotool mode
         if sisotool:
             mymat = _RLFindRoots(nump, denp, K.real)
-            ax_rlocus.plot([root.real for root in mymat], [root.imag for root in mymat], 'm.', marker='s', markersize=8,
+            ax_rlocus.plot([root.real for root in mymat], [root.imag for root in mymat], 'm.', marker='x', markersize=8,
                            zorder=20,label='gain_point')
         else:
-            ax_rlocus.plot(s.real, s.imag, 'k.', marker='s', markersize=8, zorder=20,label='gain_point')
+            ax_rlocus.plot(s.real, s.imag, 'k.', marker='x', markersize=8, zorder=20,label='gain_point')
 
         return K.real[0][0]
 
