@@ -69,6 +69,7 @@ from .robust import *
 from .config import *
 from .sisotool import *
 from .iosys import *
+from .design_region import *
 
 # Exceptions
 from .exception import *
