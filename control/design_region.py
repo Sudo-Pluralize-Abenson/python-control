@@ -23,15 +23,12 @@ import numpy as np
 __all__ = ['design_region'] 
 
 # class definition!
-class design_region(
-    OS=np.nan, # defaults
-    Tr=np.nan, # defaults
-):
+class design_region():
   # class attributes go here
-  def __init__(self, OS, Tr):
+  def __init__(self):
     # initialize instance attibutes
-    self.OS = OS
-    self.Tr = Tr
+    self.OS = np.nan
+    self.Tr = np.nan
 
   # methods
   def update_attributes(attr):
