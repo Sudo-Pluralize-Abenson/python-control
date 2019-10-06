@@ -7,7 +7,7 @@ Routines in this module:
 """
 Authors: 
 Rico AR Picone
-Kelsey Buckles
+Kelsey D. Buckles
 Alec Dryden
 Kenneth S Echevaria
 Akara Hay
