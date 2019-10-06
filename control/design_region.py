@@ -9,7 +9,7 @@ Authors:
 Rico AR Picone
 Kelsey Buckles
 Alec Dryden
-Kenneth Echevaria
+Kenneth S Echevaria
 Akara Hay
 Dane Webb
 
