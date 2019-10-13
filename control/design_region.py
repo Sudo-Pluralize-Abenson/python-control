@@ -13,6 +13,8 @@ Kenneth S Echevaria
 Akara Hay
 Dane P Webb
 
+Marcelino Figueroa (RIP)
+
 Date (initial): 2 October 2019
 """
 
