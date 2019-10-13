@@ -8,7 +8,7 @@ Routines in this module:
 Authors: 
 Rico AR Picone
 Kelsey D. Buckles
-Alec Dryden
+Alec J Dryden
 Kenneth S Echevaria
 Akara Hay
 Dane P Webb
