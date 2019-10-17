@@ -5,6 +5,7 @@ Date (initial): 3 October 2019
 """
 
 import numpy as np
+from sympy import *
 import matplotlib.pyplot as plt
 import sys
 sys.path.append(".") # Adds higher directory to python modules path.
@@ -18,7 +19,7 @@ dr1 = ct.design_region()
 print(dr1.__dict__)
 
 # set and print some parameters
-dr1.OS = 5.
-dr1.Tr = 1.3
+dr1.OS = 10
+dr1.Tr = [1.3,1.5]
 print(dr1.OS)
 print(dr1.Tr)
