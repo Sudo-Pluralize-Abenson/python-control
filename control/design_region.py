@@ -148,7 +148,7 @@ class design_region():
     # initialize instance attributes
     # _s versions are internal symbolic variables
     # _r versions are internal interval inequalities for
-    #   each variable. These are really /projections/
+    #   each variable. These are really _projections_
     #   because they can depend on other variables. 
     # Design regions are in three coordinate systems:
     #     dr_xy: x,y
@@ -157,7 +157,7 @@ class design_region():
     # variables
     self.x = [-oo,oo]
     self.x_s = Symbol('x_s')
-    self.x_r = True
+    self.x_r = self.x_s <= 0 # only stable for now
     self.y = [-oo,oo]
     self.y_s = Symbol('y_s')
     self.y_r = True
@@ -166,7 +166,7 @@ class design_region():
     self.r_r = (self.r_s >= 0)
     self.theta = [0,2*pi]
     self.theta_s = Symbol('theta_s')
-    self.theta_r = (self.theta_s>=0)&(self.theta_s<=2*pi)
+    self.theta_r = (self.theta_s>=pi/2)&(self.theta_s<=3*pi/2) # only stable for now
     self.z = [0,1] # let's only worry about underdamped for now
     self.z_s = Symbol('z_s')
     self.z_r = (self.z_s<=1)&(self.z_s>=0)
