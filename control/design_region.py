@@ -191,3 +191,84 @@ class design_region():
     self.dr_zw = (self.z_r)&(self.wn_r)
 
   # methods
+  ## design region maps
+  def zw_to_rt(self):
+    r = self.r_s
+    theta = self.theta_s
+    z = self.z_s
+    wn = self.wn_s
+    self.dr_rt = self.dr_zw.subs(
+      {wn: r,
+       z: cos(pi-theta)}
+    )
+    return self.dr_rt
+
+  def rt_to_zw(self):
+    r = self.r_s
+    theta = self.theta_s
+    z = self.z_s
+    wn = self.wn_s
+    self.dr_zw = self.dr_rt.subs(
+      {r: wn,
+       theta: pi - acos(z)}
+    )
+    return self.dr_zw
+
+  def rt_to_xy(self):
+    x = self.x_s
+    y = self.y_s
+    r = self.r_s
+    theta = self.theta_s
+    self.dr_xy = self.dr_rt.subs(
+      {r: sqrt(x**2+y**2),
+       theta: atan2(y,x)}
+    )
+    return self.dr_xy
+
+  def xy_to_rt(self):
+    x = self.x_s
+    y = self.y_s
+    r = self.r_s
+    theta = self.theta_s
+    self.dr_rt = self.dr_xy.subs(
+      {x: r*cos(theta),
+       y: r*sin(theta)}
+    )
+    return self.dr_rt
+
+  def zw_to_xy(self):
+    x = self.x_s
+    y = self.y_s
+    r = self.r_s
+    theta = self.theta_s
+    z = self.z_s
+    wn = self.wn_s
+    self.dr_xy = self.dr_zw.subs(
+      {wn: r,
+       z: cos(pi-theta)}
+    ).subs(
+      {r: sqrt(x**2+y**2),
+       theta: atan2(y,x)}
+    )
+    return self.dr_xy
+
+  def xy_to_zw(self):
+    x = self.x_s
+    y = self.y_s
+    r = self.r_s
+    theta = self.theta_s
+    z = self.z_s
+    wn = self.wn_s
+    self.dr_zw = self.dr_xy.subs(
+      {x: r*cos(theta),
+       y: r*sin(theta)}
+    ).subs(
+      {r: sqrt(x**2+y**2),
+       theta: atan2(y,x)}
+    ).subs(
+      {r: wn,
+       theta: pi - acos(z)}
+    )
+    return self.dr_zw
+
+  ## variable maps

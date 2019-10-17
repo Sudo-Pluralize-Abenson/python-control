@@ -16,10 +16,12 @@ import control as ct
 dr1 = ct.design_region()
 
 # print attributes and defaults
-print(dr1.__dict__)
+# print(dr1.__dict__)
 
 # set and print some parameters
 dr1.OS = 10
 dr1.Tr = [1.3,1.5]
 print(dr1.OS)
 print(dr1.Tr)
+
+dr1.xy_to_zw()
