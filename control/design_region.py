@@ -22,6 +22,7 @@ Date (initial): 2 October 2019
 import numpy as np
 from sympy import *
 import inspect
+from scipy.optimize import minimize
 
 # variables to expose for import
 __all__ = ['design_region'] 
@@ -37,8 +38,22 @@ class design_region():
     return self.attribute_getter(attribute)
   @x.setter
   def x(self,value):
+    # update self.x
     the_p = inspect.currentframe().f_code.co_name
     exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
+    # x to dr_xy
+    if hasattr(self,'dr_xy'):
+      self.dr_xy = self.dr_xy & self.x_r
+      # dr_xy to other drs
+      self.xy_to_rt()
+      self.xy_to_zw()
+    # project other drs to their variables
+    #   TODO
+    if hasattr(self,'r'):
+      True
+      # self.rt_projector() # propagate to r and theta
+    # compute transient response characteristics
+    #   TODO
   #
   @property
   def y(self):
@@ -132,10 +147,17 @@ class design_region():
 
   def attribute_setter(self,value,attribute):
     # this gets called in every setter!
-    if isinstance(value,list):
-      return value # was array
+    # pack into array if needed
+    if not isinstance(value,list):
+      value = [value,value] # make array
+    # update corresponding variable inequality
+    if not hasattr(self,f"{attribute}_r"):
+      exec(f"self.{attribute}_r = (self.{attribute}_s > -oo)&(self.{attribute}_s < oo)")
     else:
-      return [value,value] # make array
+      exec(f"interval = self.{attribute}_r & (self.{attribute}_s >= {value[0]}) & (self.{attribute}_s <= {value[1]})")
+      exec(f"interval = interval.as_set().as_relational(self.{attribute}_s)")
+      exec(f"self.{attribute}_r = interval")
+    return value
 
   def attribute_getter(self,attribute):
     if attribute[0]==attribute[1]:
@@ -149,43 +171,33 @@ class design_region():
     # _s versions are internal symbolic variables
     # _r versions are internal interval inequalities for
     #   each variable. These are really _projections_
-    #   because they can depend on other variables. 
-    # Design regions are in three coordinate systems:
+    #   because they can depend on other variables.
+    # variables
+    self.x_s = Symbol('x_s',real=True)
+    self.x = [-oo,oo]
+    self.y_s = Symbol('y_s',real=True)
+    self.y = [-oo,oo]
+    self.r_s = Symbol('r_s',real=True)
+    self.r = [0,oo]
+    self.theta_s = Symbol('theta_s',real=True)
+    self.theta = [0,2*pi]
+    self.z_s = Symbol('z_s',real=True)
+    self.z = [0,1] # let's only worry about underdamped for now
+    self.wn_s = Symbol('wn_s',real=True)
+    self.wn = [0,oo]
+    self.OS_s = Symbol('OS_s',real=True)
+    self.OS = [0,oo]
+    self.Ts_s = Symbol('Ts_s',real=True)
+    self.Ts = [0,oo]
+    self.Tr_s = Symbol('Tr_s',real=True)
+    self.Tr = [0,oo]
+    self.Tp_s = Symbol('Tp_s',real=True)
+    self.Tp = [0,oo]
+    # design regions 
+    # design regions are in three coordinate systems:
     #     dr_xy: x,y
     #     dr_rt: r,theta
     #     dr_zw: z,wn
-    # variables
-    self.x = [-oo,oo]
-    self.x_s = Symbol('x_s')
-    self.x_r = self.x_s <= 0 # only stable for now
-    self.y = [-oo,oo]
-    self.y_s = Symbol('y_s')
-    self.y_r = True
-    self.r = [0,oo]
-    self.r_s = Symbol('r_s')
-    self.r_r = (self.r_s >= 0)
-    self.theta = [0,2*pi]
-    self.theta_s = Symbol('theta_s')
-    self.theta_r = (self.theta_s>=pi/2)&(self.theta_s<=3*pi/2) # only stable for now
-    self.z = [0,1] # let's only worry about underdamped for now
-    self.z_s = Symbol('z_s')
-    self.z_r = (self.z_s<=1)&(self.z_s>=0)
-    self.wn = [0,oo]
-    self.wn_s = Symbol('wn_s')
-    self.wn_r = (self.wn_s >= 0)
-    self.OS = [0,oo]
-    self.OS_s = Symbol('OS_s')
-    self.OS_r = self.OS_s >= 0
-    self.Ts = [0,oo]
-    self.Ts_s = Symbol('Ts_s')
-    self.Ts_r = self.Ts_s >= 0
-    self.Tr = [0,oo]
-    self.Tr_s = Symbol('Tr_s')
-    self.Tr_r = self.Tr_s >= 0
-    self.Tp = [0,oo]
-    self.Tp_s = Symbol('Tp_s')
-    self.Tp_r = self.Tp_s >= 0
-    # design regions
     self.dr_xy = (self.x_r)&(self.y_r)
     self.dr_rt = (self.r_r)&(self.theta_r)
     self.dr_zw = (self.z_r)&(self.wn_r)
@@ -271,4 +283,76 @@ class design_region():
     )
     return self.dr_zw
 
-  ## variable maps
+  ## design region projections to their coordinates
+  
+  def xy_projector(self):
+    # project dr_xy onto x and y
+    var('x',real=True)
+    var('y',real=True)
+    if self.y_s in self.dr_xy.free_symbols:
+      if self.x_s in self.dr_xy.free_symbols: # optimize
+        y_fun = lambdify(x,self.dr_xy.subs({self.x_s: x}).as_set().start)
+        y_min = minimize(y_fun,[0.0]).fun
+        y_fun = lambdify(x,-1*self.dr_xy.subs({self.x_s: x}).as_set().end)
+        y_max = -minimize(y_fun,[0.0]).fun
+      else: # just an interval in y
+        y_min = self.dr_xy.as_set().start
+        y_max = self.dr_xy.as_set().end
+    else:
+      y_min,y_max = -oo,oo
+    if self.x_s in self.dr_xy.free_symbols:
+      if self.y_s in self.dr_xy.free_symbols: # optimize
+        x_fun = lambdify(y,self.dr_xy.subs({self.y_s: y}).as_set().start)
+        x_min = minimize(x_fun,[0.0]).fun
+        x_fun = lambdify(y,-1*self.dr_xy.subs({self.y_s: y}).as_set().end)
+        x_max = -minimize(x_fun,[0.0]).fun
+      else: # just an interval in x
+        x_min = self.dr_xy.as_set().start
+        x_max = self.dr_xy.as_set().end
+    else:
+      x_min,x_max = -oo,oo
+    self.x_r = [x_min,x_max]
+    self.y_r = [y_min,y_max]
+  
+  def rt_projector(self):
+    # project dr_rt onto r and theta
+    raise NotImplementedError('projection of design region in rt onto r and theta')
+    var('r',real=True)
+    var('t',real=True)
+    if self.theta_s in self.dr_rt.free_symbols:
+      if self.r_s in self.dr_rt.free_symbols: # optimize
+        # TODO this is giving me trouble because it has a cos of the variable I want as an interval
+        theta_fun1 = lambda r: self.dr_rt.subs({self.r_s: r})
+        theta_fun2 = lambda r: theta_fun1(r).as_set().start
+        # print(theta_fun1(1.2))
+        theta_min = minimize(theta_fun2,[pi]).fun
+        theta_fun = lambdify(r,-1*self.dr_rt.subs({self.r_s: r}).as_set().end)
+        theta_max = -minimize(theta_fun,[0.0]).fun
+      else: # just an interval in theta
+        theta_min = self.dr_rt.as_set().start
+        theta_max = self.dr_rt.as_set().end
+    else:
+      theta_min,theta_max = -oo,oo
+    if self.r_s in self.dr_rt.free_symbols:
+      if self.theta_s in self.dr_rt.free_symbols: # optimize
+        r_fun = lambdify(theta,self.dr_rt.subs({self.theta_s: theta}).as_set().start)
+        r_min = minimize(r_fun,[0.0]).fun
+        r_fun = lambdify(theta,-1*self.dr_rt.subs({self.theta_s: theta}).as_set().end)
+        r_max = -minimize(r_fun,[0.0]).fun
+      else: # just an interval in x
+        r_min = self.dr_rt.as_set().start
+        r_max = self.dr_rt.as_set().end
+    else:
+      r_min,r_max = -oo,oo
+    self.r_r = [r_min,r_max]
+    self.theta_r = [theta_min,theta_max]
+
+  # plot!
+  def plot_dr(self):
+    p = plot_implicit(
+      self.dr_xy,
+      x_var=self.x_s,
+      y_var=self.y_s,
+      xlabel='Re',
+      ylabel='Im')
+    p.show()

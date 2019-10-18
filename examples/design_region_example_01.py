@@ -24,4 +24,14 @@ dr1.Tr = [1.3,1.5]
 print(dr1.OS)
 print(dr1.Tr)
 
-dr1.xy_to_zw()
+print(dr1.dr_xy)
+print(dr1.dr_rt)
+dr1.x = [-4,-1]
+# dr1.y = [-oo,3]
+print(dr1.dr_xy) # updated!
+print(dr1.dr_rt) # updated!
+print(dr1.r) # not yet updating, see rt_projector
+print(dr1.theta) # not yet updating, see rt_projector
+
+# plot design region
+dr1.plot_dr()
