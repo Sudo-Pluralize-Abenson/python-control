@@ -27,11 +27,15 @@ print(dr1.Tr)
 print(dr1.dr_xy)
 print(dr1.dr_rt)
 dr1.x = [-4,-1]
-dr1.y = [2,6]
+# dr1.y = [2,6]
 print(dr1.dr_xy) # updated!
 print(dr1.dr_rt) # updated!
 print(dr1.r) # updated!
 print(dr1.theta) # updated!
+
+dr1.theta = [pi/2,pi] # won't plot after this because we're not properly updating dr_xy
+
+print(dr1.dr_xy)
 
 # plot design region
 dr1.plot_dr()

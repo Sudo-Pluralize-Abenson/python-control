@@ -40,7 +40,10 @@ class design_region():
     return self.attribute_getter(attribute)
   @x.setter
   def x(self,value):
-    # update self.x
+    # check for valid values
+    value = self.normalize_input(value)
+    if value[1] > 0:
+      raise Exception('x must be nonpositive')
     the_p = inspect.currentframe().f_code.co_name
     exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
     
@@ -71,6 +74,10 @@ class design_region():
     return self.attribute_getter(attribute)
   @y.setter
   def y(self,value):
+    # check for valid values
+    value = self.normalize_input(value)
+    if value[0] < 0:
+      raise Exception('y must be nonnegative')
     the_p = inspect.currentframe().f_code.co_name
     exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
     
@@ -100,6 +107,10 @@ class design_region():
     return self.attribute_getter(attribute)
   @r.setter
   def r(self,value):
+    # check for valid values
+    value = self.normalize_input(value)
+    if value[0] < 0:
+      raise Exception('r must be nonnegative')
     the_p = inspect.currentframe().f_code.co_name
     exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
     
@@ -131,6 +142,12 @@ class design_region():
     return self.attribute_getter(attribute)
   @theta.setter
   def theta(self,value):
+    # check for valid values
+    value = self.normalize_input(value)
+    value_in = Interval(*value)
+    value_valid = Interval(pi/2,pi)
+    if not (value_in-value_valid).is_empty:
+      raise Exception('theta must be between pi/2 and pi')
     the_p = inspect.currentframe().f_code.co_name
     exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
     
@@ -246,8 +263,7 @@ class design_region():
   def attribute_setter(self,value,attribute):
     # this gets called in every setter!
     # pack into array if needed
-    if not isinstance(value,list):
-      value = [value,value] # make array
+    value = self.normalize_input(value)
     # update corresponding variable inequality
     if not hasattr(self,f"{attribute}_r"):
       exec(f"self.{attribute}_r = (self.{attribute}_s >= {value[0]}) & (self.{attribute}_s <= {value[1]})")
@@ -255,6 +271,12 @@ class design_region():
       exec(f"interval = self.{attribute}_r & (self.{attribute}_s >= {value[0]}) & (self.{attribute}_s <= {value[1]})")
       exec(f"interval = interval.as_set().as_relational(self.{attribute}_s)")
       exec(f"self.{attribute}_r = interval")
+    return value
+
+  def normalize_input(self,value):
+    if not isinstance(value,list):
+      value = [value,value] # make array
+    value.sort() # works with oo
     return value
 
   def attribute_getter(self,attribute):
@@ -285,9 +307,9 @@ class design_region():
     #   because they can depend on other variables.
     # variables
     self.x_s = Symbol('x_s',real=True)
-    self.x = [-oo,oo]
+    self.x = [-oo,0]
     self.y_s = Symbol('y_s',real=True)
-    self.y = [-oo,oo]
+    self.y = [0,oo]
     self.r_s = Symbol('r_s',real=True)
     self.r = [0,oo]
     self.theta_s = Symbol('theta_s',real=True)
@@ -344,7 +366,7 @@ class design_region():
     theta = self.theta_s
     self.dr_xy = self.dr_rt.subs(
       {r: sqrt(x**2+y**2),
-       theta: atan2(y,x)}
+       theta: atan(y/x)-pi}
     )
     return self.dr_xy
 
@@ -371,7 +393,7 @@ class design_region():
        z: cos(pi-theta)}
     ).subs(
       {r: sqrt(x**2+y**2),
-       theta: atan2(y,x)}
+       theta: atan(y/x)-pi}
     )
     return self.dr_xy
 
@@ -387,7 +409,7 @@ class design_region():
        y: r*sin(theta)}
     ).subs(
       {r: sqrt(x**2+y**2),
-       theta: atan2(y,x)}
+       theta: atan(y/x)-pi}
     ).subs(
       {r: wn,
        theta: pi - acos(z)}
@@ -398,7 +420,7 @@ class design_region():
 
   def co_xy_to_rt(self,x,y):
     r = sqrt(x**2+y**2)
-    t = atan2(y,x)
+    t = atan(y/x)-pi
     return r,t
 
   def co_rt_to_xy(self,r,t):
