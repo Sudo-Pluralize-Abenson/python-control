@@ -283,6 +283,38 @@ class design_region():
     )
     return self.dr_zw
 
+  ## general coordinate transformations
+
+  def co_xy_to_rt(self,x,y):
+    r = sqrt(x**2+y**2)
+    t = atan2(y,x)
+    return r,t
+
+  def co_rt_to_xy(self,r,t):
+    x = r*cos(t)
+    y = r*sin(t)
+    return x,y
+
+  def co_zw_to_rt(self,z,w):
+    r = w
+    t = pi - acos(z)
+    return r,t
+
+  def co_rt_to_zw(self,r,t):
+    w = r
+    z = cos(pi-t)
+    return z,w
+
+  def co_xy_to_zw(self,x,y):
+    r,t = self.co_xy_to_rt(x,y)
+    z,w = self.co_rt_to_zw(r,t)
+    return z,w
+
+  def co_zw_to_xy(self,z,w):
+    r,t = self.co_zw_to_rt(z,w)
+    x,y = self.co_rt_to_xy(r,t)
+    return x,y
+
   ## design region projections to their coordinates
   
   def xy_projector(self):
