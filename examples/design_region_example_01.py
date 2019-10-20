@@ -30,8 +30,8 @@ dr1.x = [-4,-1]
 # dr1.y = [-oo,3]
 print(dr1.dr_xy) # updated!
 print(dr1.dr_rt) # updated!
-print(dr1.r) # not yet updating, see rt_projector
-print(dr1.theta) # not yet updating, see rt_projector
+print(dr1.r) # updated!
+print(dr1.theta) # updated!
 
 # plot design region
 # dr1.plot_dr()
