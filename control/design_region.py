@@ -24,6 +24,7 @@ from sympy import *
 import inspect
 from scipy.optimize import minimize
 import warnings
+import sys
 
 # variables to expose for import
 __all__ = ['design_region'] 
@@ -42,19 +43,20 @@ class design_region():
     # update self.x
     the_p = inspect.currentframe().f_code.co_name
     exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
-    # x to dr_xy
-    if hasattr(self,'dr_xy'):
+    if not self.is_calling_method_init():
+      # x to dr_xy
       self.dr_xy = self.dr_xy & self.x_r
-      # dr_xy to other drs
-      self.xy_to_rt()
-      self.xy_to_zw()
-    # project other drs to their variables
-    #   TODO
-    if hasattr(self,'r'):
-      self.in_xy_to_rt(is_x=True)
-      # self.rt_projector() # propagate to r and theta
-    # compute transient response characteristics
-    #   TODO
+      if not self.is_calling_method_setter():
+        print('... x to other stuff')
+        # avoids loops
+        # dr_xy to other drs
+        self.xy_to_rt()
+        self.xy_to_zw()
+        # interval maps
+        self.in_xy_to_rt(is_x=True)
+        # TODO ...
+    else:
+      self.dr_xy = self.x_r
   #
   @property
   def y(self):
@@ -65,6 +67,19 @@ class design_region():
   def y(self,value):
     the_p = inspect.currentframe().f_code.co_name
     exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
+    if not self.is_calling_method_init():
+      # y to dr_xy
+      self.dr_xy = self.dr_xy & self.y_r
+      if not self.is_calling_method_setter():
+        # avoids loops
+        # dr_xy to other drs
+        self.xy_to_rt()
+        self.xy_to_zw()
+        # interval maps
+        self.in_xy_to_rt(is_x=False)
+        # TODO
+    else:
+      self.dr_xy = self.dr_xy & self.x_r # region exists because x is __init__ialized first
   #
   @property
   def r(self):
@@ -75,6 +90,21 @@ class design_region():
   def r(self,value):
     the_p = inspect.currentframe().f_code.co_name
     exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
+    if not self.is_calling_method_init():
+      # r to dr_rt
+      self.dr_rt = self.dr_rt & self.r_r
+      if not self.is_calling_method_setter():
+        print('... r to other stuff')
+        # avoids loops
+        # dr_rt to other drs
+        self.rt_to_xy()
+        self.rt_to_zw()
+        # interval maps
+        self.in_rt_to_xy()
+        # TODO
+    else:
+      print(f"dr_rt: {self.r_r}")
+      self.dr_rt = self.r_r
   #
   @property
   def theta(self):
@@ -85,6 +115,20 @@ class design_region():
   def theta(self,value):
     the_p = inspect.currentframe().f_code.co_name
     exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
+    if not self.is_calling_method_init():
+      # r to dr_rt
+      self.dr_rt = self.dr_rt & self.theta_r
+      if not self.is_calling_method_setter():
+        # avoids loops
+        # dr_rt to other drs
+        self.rt_to_xy()
+        self.rt_to_zw()
+        # interval maps
+        self.in_rt_to_xy()
+      # TODO
+    else:
+      self.dr_rt = self.dr_rt & self.theta_r # region exists because x is __init__ialized first
+
   #
   @property
   def z(self):
@@ -153,7 +197,7 @@ class design_region():
       value = [value,value] # make array
     # update corresponding variable inequality
     if not hasattr(self,f"{attribute}_r"):
-      exec(f"self.{attribute}_r = (self.{attribute}_s > -oo)&(self.{attribute}_s < oo)")
+      exec(f"self.{attribute}_r = (self.{attribute}_s >= {value[0]}) & (self.{attribute}_s <= {value[1]})")
     else:
       exec(f"interval = self.{attribute}_r & (self.{attribute}_s >= {value[0]}) & (self.{attribute}_s <= {value[1]})")
       exec(f"interval = interval.as_set().as_relational(self.{attribute}_s)")
@@ -165,6 +209,19 @@ class design_region():
       return attribute[0]
     else:
       return attribute
+
+  def is_calling_method_init(self):
+    return inspect.stack()[2].function == '__init__'
+
+  def is_calling_method_setter(self):
+    # checks to see if this is part of a different interval setter call
+    try: # stack is shorter when not a different interval setter, but I don't want to trust this completely
+      calling_method = inspect.stack()[3].function
+      # still text is_setter because paranoid
+    except:
+      calling_method = inspect.stack()[2].function
+    is_setter = calling_method in ['x','y','r','theta','z','w','OS','Ts','Tr','Tp']
+    return is_setter
 
   # class attributes go here
   def __init__(self):
@@ -181,7 +238,7 @@ class design_region():
     self.r_s = Symbol('r_s',real=True)
     self.r = [0,oo]
     self.theta_s = Symbol('theta_s',real=True)
-    self.theta = [0,2*pi]
+    self.theta = [pi/2,pi]
     self.z_s = Symbol('z_s',real=True)
     self.z = [0,1] # let's only worry about underdamped for now
     self.wn_s = Symbol('wn_s',real=True)
@@ -329,6 +386,25 @@ class design_region():
     if (r_min != self.r[0]) or (r_max != self.r[1]):
       print('Warning: a previous assignment was more restricted and will be observed.')
     self.r = [self.r_r.as_set().start,self.r_r.as_set().end]
+
+  def in_rt_to_xy(self):
+    i_theta_pi = np.argmin(np.pi-np.array(self.theta))
+    theta_pi = self.theta[i_theta_pi] # closest to pi
+    theta_other = self.theta[not i_theta_pi] # further
+    x_min = self.r[1]*cos(theta_pi)
+    x_max = self.r[0]*cos(theta_other)
+    y_min = self.r[0]*sin(theta_pi)
+    y_max = self.r[1]*sin(theta_other)
+    self.x_r = self.x_r & (self.x_s >= x_min) & (self.x_s <= x_max)
+    self.x_r = self.x_r.as_set().as_relational(self.x_s)
+    if (x_min != self.x[0]) or (x_max != self.x[1]):
+      print('Warning: a previous assignment was more restricted and will be observed.')
+    self.x = [self.x_r.as_set().start,self.x_r.as_set().end]
+    self.y_r = self.y_r & (self.y_s >= y_min) & (self.y_s <= y_max)
+    self.y_r = self.y_r.as_set().as_relational(self.y_s)
+    if (y_min != self.y[0]) or (y_max != self.y[1]):
+      print('Warning: a previous assignment was more restricted and will be observed.')
+    self.y = [self.y_r.as_set().start,self.y_r.as_set().end]
 
   ## design region projections to their coordinates
   
