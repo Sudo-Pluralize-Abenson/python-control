@@ -549,16 +549,7 @@ class design_region():
     # could we have the user just update 1 value at a time?
 
 
-    """
-    dr = design_region
-    dr.OS_based(((OS>10)&(OS<20))
-    dr.Ts_based(((Ts>0.5)&(Ts<2)), plot=True)
-    # plot os and ts restricted regions
-    
-    
-    """
-
-    def OS_based(self, expr, plot=False):
+    def OS_based(self, expr):
         #############################################
         ################ NOT WORKING ################
         #############################################
@@ -582,12 +573,7 @@ class design_region():
         self.dr_rt(OS_rt)
 
 
-        if plot==True:
-            # plotting dr_xy is in plot_dr()
-            self.plot_dr()
-
-
-    def Tp_based(self, expr, plot=False):
+    def Tp_based(self, expr):
         #############################################
         ################ NOT WORKING ################
         #############################################
@@ -607,11 +593,8 @@ class design_region():
         Tp_rt = self.zw_to_rt(expr2)
         self.dr_rt(Tp_rt)
 
-        if plot==True:
-            self.plot_dr()
 
-
-    def Ts_based(self, expr, plot=False):
+    def Ts_based(self, expr):
         #############################################
         ################ NOT WORKING ################
         #############################################
@@ -630,11 +613,8 @@ class design_region():
         Ts_rt = self.xy_to_rt(expr2)
         self.dr_rt(Ts_rt)
 
-        if plot==True:
-            self.plot_dr()
 
-
-    def xy_based(self, expr, plot=False):
+    def xy_based(self, expr):
         #############################################
         ################ NOT WORKING ################
         #############################################
@@ -651,11 +631,9 @@ class design_region():
         xy_rt = self.xy_to_rt(expr)
         self.dr_rt(xy_rt)
 
-        if plot==True:
-            self.plot_dr()
 
 
-    def zw_based(self, expr, plot=False):
+    def zw_based(self, expr):
         #############################################
         ################ NOT WORKING ################
         #############################################
@@ -671,11 +649,9 @@ class design_region():
 
         zw_xy = self.zw_to_xy(expr)
         self.dr_rt(zw_xy)
+                  
 
-        if plot==True:
-            self.plot_dr()
-
-    def rt_based(self, expr, plot=False):
+    def rt_based(self, expr):
         #############################################
         ################ NOT WORKING ################
         #############################################
@@ -691,6 +667,3 @@ class design_region():
 
         rt_zw = self.rt_to_zw(expr)
         self.dr_zw(rt_zw)
-
-        if plot == True:
-            self.plot_dr()
