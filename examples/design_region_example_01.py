@@ -34,4 +34,4 @@ print(dr1.r) # not yet updating, see rt_projector
 print(dr1.theta) # not yet updating, see rt_projector
 
 # plot design region
-dr1.plot_dr()
+# dr1.plot_dr()

@@ -23,6 +23,7 @@ import numpy as np
 from sympy import *
 import inspect
 from scipy.optimize import minimize
+import warnings
 
 # variables to expose for import
 __all__ = ['design_region'] 
@@ -50,7 +51,7 @@ class design_region():
     # project other drs to their variables
     #   TODO
     if hasattr(self,'r'):
-      True
+      self.in_xy_to_rt(is_x=True)
       # self.rt_projector() # propagate to r and theta
     # compute transient response characteristics
     #   TODO
@@ -314,6 +315,20 @@ class design_region():
     r,t = self.co_zw_to_rt(z,w)
     x,y = self.co_rt_to_xy(r,t)
     return x,y
+
+  ## interval maps
+
+  def in_xy_to_rt(self,is_x):
+    if is_x:
+      r_min,_ = self.co_xy_to_rt(min(np.abs(self.x)),0)
+    else: # is_y
+      r_min,_ = self.co_xy_to_rt(0,min(np.abs(self.y)))
+    r_max = oo
+    self.r_r = self.r_r & (self.r_s >= r_min) & (self.r_s <= r_max)
+    self.r_r = self.r_r.as_set().as_relational(self.r_s) # simplify
+    if (r_min != self.r[0]) or (r_max != self.r[1]):
+      print('Warning: a previous assignment was more restricted and will be observed.')
+    self.r = [self.r_r.as_set().start,self.r_r.as_set().end]
 
   ## design region projections to their coordinates
   
