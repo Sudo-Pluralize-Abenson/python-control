@@ -47,7 +47,6 @@ class design_region():
       # x to dr_xy
       self.dr_xy = self.dr_xy & self.x_r
       if not self.is_calling_method_setter():
-        print('... x to other stuff')
         # avoids loops
         # dr_xy to other drs
         self.xy_to_rt()
