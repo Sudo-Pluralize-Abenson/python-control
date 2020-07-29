@@ -48,7 +48,7 @@ class TestConfig(unittest.TestCase):
 
 
     def test_fbs_bode(self):
-        ct.use_fbs_defaults();
+        ct.use_fbs_defaults()
 
         # Generate a Bode plot
         plt.figure()
@@ -94,7 +94,7 @@ class TestConfig(unittest.TestCase):
         ct.reset_defaults()
         
     def test_matlab_bode(self):
-        ct.use_matlab_defaults();
+        ct.use_matlab_defaults()
 
         # Generate a Bode plot
         plt.figure()
@@ -107,8 +107,8 @@ class TestConfig(unittest.TestCase):
         mag_data = mag_line[0].get_data()
         mag_x, mag_y = mag_data
 
-        # Make sure the x-axis is in Hertz and y-axis is in dB
-        np.testing.assert_almost_equal(mag_x[0], 0.001 / (2*pi), decimal=6)
+        # Make sure the x-axis is in rad/sec and y-axis is in dB
+        np.testing.assert_almost_equal(mag_x[0], 0.001, decimal=6)
         np.testing.assert_almost_equal(mag_y[0], 20*log10(10), decimal=3)
 
         # Get the phase line
@@ -117,8 +117,8 @@ class TestConfig(unittest.TestCase):
         phase_data = phase_line[0].get_data()
         phase_x, phase_y = phase_data
 
-        # Make sure the x-axis is in Hertz and y-axis is in degrees
-        np.testing.assert_almost_equal(phase_x[-1], 1000 / (2*pi), decimal=1)
+        # Make sure the x-axis is in rad/sec and y-axis is in degrees
+        np.testing.assert_almost_equal(phase_x[-1], 1000, decimal=1)
         np.testing.assert_almost_equal(phase_y[-1], -180, decimal=0)
         
         # Override the defaults and make sure that works as well
@@ -211,15 +211,29 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(
             ct.config.defaults['freqplot.feature_periphery_decades'], 1.0)
 
+    def test_legacy_defaults(self):
+        ct.use_legacy_defaults('0.8.3')
+        assert(isinstance(ct.ss(0,0,0,1).D, np.matrix))
+        ct.reset_defaults()
+        assert(isinstance(ct.ss(0,0,0,1).D, np.ndarray))
+    
+    def test_change_default_dt(self):
+        ct.set_defaults('statesp', default_dt=0)
+        self.assertEqual(ct.ss(0,0,0,1).dt, 0)
+        ct.set_defaults('statesp', default_dt=None)
+        self.assertEqual(ct.ss(0,0,0,1).dt, None)
+        ct.set_defaults('xferfcn', default_dt=0)
+        self.assertEqual(ct.tf(1, 1).dt, 0)
+        ct.set_defaults('xferfcn', default_dt=None)
+        self.assertEqual(ct.tf(1, 1).dt, None)
+        
+
     def tearDown(self):
         # Get rid of any figures that we created
         plt.close('all')
 
         # Reset the configuration defaults
         ct.config.reset_defaults()
-
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(TestTimeresp)
 
 
 if __name__ == '__main__':

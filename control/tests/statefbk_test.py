@@ -6,7 +6,7 @@
 from __future__ import print_function
 import unittest
 import numpy as np
-from control.statefbk import ctrb, obsv, place, place_varga, lqr, gram, acker
+from control.statefbk import ctrb, obsv, place, place_varga, lqr, lqe, gram, acker
 from control.matlab import *
 from control.exception import slycot_check, ControlDimension
 from control.mateqn import care, dare
@@ -299,6 +299,20 @@ class TestStatefbk(unittest.TestCase):
         K, S, poles = lqr(sys, Q, R)
         self.check_LQR(K, S, poles, Q, R)
 
+    def check_LQE(self, L, P, poles, G, QN, RN):
+        P_expected = np.array(np.sqrt(G*QN*G * RN))
+        L_expected = P_expected / RN
+        poles_expected = np.array([-L_expected], ndmin=2)
+        np.testing.assert_array_almost_equal(P, P_expected)
+        np.testing.assert_array_almost_equal(L, L_expected)
+        np.testing.assert_array_almost_equal(poles, poles_expected)
+
+    @unittest.skipIf(not slycot_check(), "slycot not installed")
+    def test_LQE(self):
+        A, G, C, QN, RN = 0., .1, 1., 10., 2.
+        L, P, poles = lqe(A, G, C, QN, RN)
+        self.check_LQE(L, P, poles, G, QN, RN)
+
     @unittest.skipIf(not slycot_check(), "slycot not installed")
     def test_care(self):
         #unit test for stabilizing and anti-stabilizing feedbacks
@@ -329,9 +343,6 @@ class TestStatefbk(unittest.TestCase):
         X, L , G = dare(A, B, Q, R, S, E, stabilizing=False)
         assert np.all(np.abs(L) > 1)
 
-
-def test_suite():
-   return unittest.TestLoader().loadTestsFromTestCase(TestStatefbk)
 
 if __name__ == '__main__':
     unittest.main()

@@ -449,7 +449,7 @@ class TestXferFcn(unittest.TestCase):
         np.testing.assert_array_almost_equal(sys(2.j), resp)
 
     def test_freqresp_siso(self):
-        """Evaluate the magnitude and phase of a SISO system at 
+        """Evaluate the magnitude and phase of a SISO system at
         multiple frequencies."""
 
         sys = TransferFunction([1., 3., 5], [1., 6., 2., -1])
@@ -467,7 +467,7 @@ class TestXferFcn(unittest.TestCase):
 
     @unittest.skipIf(not slycot_check(), "slycot not installed")
     def test_freqresp_mimo(self):
-        """Evaluate the magnitude and phase of a MIMO system at 
+        """Evaluate the magnitude and phase of a MIMO system at
         multiple frequencies."""
 
         num = [[[1., 2.], [0., 3.], [2., -1.]],
@@ -496,7 +496,76 @@ class TestXferFcn(unittest.TestCase):
         np.testing.assert_array_equal(omega, true_omega)
 
     # Tests for TransferFunction.pole and TransferFunction.zero.
-    
+    def test_common_den(self):
+        """ Test the helper function to compute common denomitators."""
+
+        # _common_den() computes the common denominator per input/column.
+        # The testing columns are:
+        # 0: no common poles
+        # 1: regular common poles
+        # 2: poles with multiplicity,
+        # 3: complex poles
+        # 4: complex poles below threshold
+
+        eps = np.finfo(float).eps
+        tol_imag = np.sqrt(eps*5*2*2)*0.9
+
+        numin = [[[1.], [1.], [1.], [1.], [1.]],
+                 [[1.], [1.], [1.], [1.], [1.]]]
+        denin = [[[1., 3., 2.],          # 0: poles: [-1, -2]
+                  [1., 6., 11., 6.],     # 1: poles: [-1, -2, -3]
+                  [1., 6., 11., 6.],     # 2: poles: [-1, -2, -3]
+                  [1., 6., 11., 6.],     # 3: poles: [-1, -2, -3]
+                  [1., 6., 11., 6.]],    # 4: poles: [-1, -2, -3],
+                 [[1., 12., 47., 60.],   # 0: poles: [-3, -4, -5]
+                  [1., 9., 26., 24.],    # 1: poles: [-2, -3, -4]
+                  [1., 7., 16., 12.],    # 2: poles: [-2, -2, -3]
+                  [1., 7., 17., 15.],    # 3: poles: [-2+1J, -2-1J, -3],
+                  np.poly([-2 + tol_imag * 1J, -2 - tol_imag * 1J, -3])]]
+        numref = np.array([
+                [[0.,  0.,  1., 12., 47., 60.],
+                 [0.,  0.,  0.,  1.,  4.,  0.],
+                 [0.,  0.,  0.,  1.,  2.,  0.],
+                 [0.,  0.,  0.,  1.,  4.,  5.],
+                 [0.,  0.,  0.,  1.,  2.,  0.]],
+                [[0.,  0.,  0.,  1.,  3.,  2.],
+                 [0.,  0.,  0.,  1.,  1.,  0.],
+                 [0.,  0.,  0.,  1.,  1.,  0.],
+                 [0.,  0.,  0.,  1.,  3.,  2.],
+                 [0.,  0.,  0.,  1.,  1.,  0.]]])
+        denref = np.array(
+                [[1., 15., 85., 225., 274., 120.],
+                 [1., 10., 35., 50., 24.,  0.],
+                 [1.,  8., 23., 28., 12.,  0.],
+                 [1., 10., 40., 80., 79., 30.],
+                 [1.,  8., 23., 28., 12.,  0.]])
+        sys = TransferFunction(numin, denin)
+        num, den, denorder = sys._common_den()
+        np.testing.assert_array_almost_equal(num[:2, :, :], numref)
+        np.testing.assert_array_almost_equal(num[2:, :, :],
+                                             np.zeros((3, 5, 6)))
+        np.testing.assert_array_almost_equal(den, denref)
+
+    def test_common_den_nonproper(self):
+        """ Test _common_den with order(num)>order(den) """
+
+        tf1 = TransferFunction(
+                [[[1., 2., 3.]], [[1., 2.]]],
+                [[[1., -2.]], [[1., -3.]]])
+        tf2 = TransferFunction(
+                [[[1., 2.]], [[1., 2., 3.]]],
+                [[[1., -2.]], [[1., -3.]]])
+
+        common_den_ref = np.array([[1., -5., 6.]])
+
+        np.testing.assert_raises(ValueError, tf1._common_den)
+        np.testing.assert_raises(ValueError, tf2._common_den)
+
+        _, den1, _ = tf1._common_den(allow_nonproper=True)
+        np.testing.assert_array_almost_equal(den1, common_den_ref)
+        _, den2, _ = tf2._common_den(allow_nonproper=True)
+        np.testing.assert_array_almost_equal(den2, common_den_ref)
+
     @unittest.skipIf(not slycot_check(), "slycot not installed")
     def test_pole_mimo(self):
         """Test for correct MIMO poles."""
@@ -508,13 +577,20 @@ class TestXferFcn(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(p, [-2., -2., -7., -3., -2.])
 
-    @unittest.skipIf(not slycot_check(), "slycot not installed")
+        # non proper transfer function
+        sys2 = TransferFunction(
+            [[[1., 2., 3., 4.], [1.]], [[1.], [1.]]],
+            [[[1., 2.], [1., 3.]], [[1., 4., 4.], [1., 9., 14.]]])
+        p2 = sys2.pole()
+
+        np.testing.assert_array_almost_equal(p2, [-2., -2., -7., -3., -2.])
+
     def test_double_cancelling_poles_siso(self):
-        
+
         H = TransferFunction([1, 1], [1, 2, 1])
         p = H.pole()
         np.testing.assert_array_almost_equal(p, [-1, -1])
-    
+
     # Tests for TransferFunction.feedback
     def test_feedback_siso(self):
         """Test for correct SISO transfer function feedback."""
@@ -730,6 +806,25 @@ class TestXferFcn(unittest.TestCase):
         self.assertTrue(isinstance(str(sys), str))
         self.assertTrue(isinstance(sys._repr_latex_(), str))
 
+    def test_printing_polynomial(self):
+        """Cover all _tf_polynomial_to_string code branches"""
+        # Note: the assertions below use plain assert statements instead of
+        # unittest methods so that debugging with pytest is easier
+
+        assert str(TransferFunction([0], [1])) == "\n0\n-\n1\n"
+        assert str(TransferFunction([1.0001], [-1.1111])) == \
+            "\n  1\n------\n-1.111\n"
+        assert str(TransferFunction([0, 1], [0, 1.])) == "\n1\n-\n1\n"
+        for var, dt, dtstring in zip(["s", "z", "z"],
+                                     [None, True, 1],
+                                     ['', '', '\ndt = 1\n']):
+            assert str(TransferFunction([1, 0], [2, 1], dt)) == \
+                "\n   {var}\n-------\n2 {var} + 1\n{dtstring}".format(
+                    var=var, dtstring=dtstring)
+            assert str(TransferFunction([2, 0, -1], [1, 0, 0, 1.2], dt)) == \
+                "\n2 {var}^2 - 1\n---------\n{var}^3 + 1.2\n{dtstring}".format(
+                    var=var, dtstring=dtstring)
+
     @unittest.skipIf(not slycot_check(), "slycot not installed")
     def test_printing_mimo(self):
         # MIMO, continuous time
@@ -756,9 +851,87 @@ class TestXferFcn(unittest.TestCase):
         self.assertRaises(NotImplementedError,
                           TransferFunction.feedback, sys2, sys1)
 
+    def test_latex_repr(self):
+        """ Test latex printout for TransferFunction """
+        Hc = TransferFunction([1e-5, 2e5, 3e-4],
+                              [1.2e34, 2.3e-4, 2.3e-45])
+        Hd = TransferFunction([1e-5, 2e5, 3e-4],
+                              [1.2e34, 2.3e-4, 2.3e-45],
+                              .1)
+        # TODO: make the multiplication sign configurable
+        expmul = r'\times'
+        for var, H, suffix in zip(['s', 'z'],
+                                  [Hc, Hd],
+                                  ['', r'\quad dt = 0.1']):
+            ref = (r'$$\frac{'
+                   r'1 ' + expmul + ' 10^{-5} ' + var + '^2 '
+                   r'+ 2 ' + expmul + ' 10^{5} ' + var + ' + 0.0003'
+                   r'}{'
+                   r'1.2 ' + expmul + ' 10^{34} ' + var + '^2 '
+                   r'+ 0.00023 ' + var + ' '
+                   r'+ 2.3 ' + expmul + ' 10^{-45}'
+                   r'}' + suffix + '$$')
+            self.assertEqual(H._repr_latex_(), ref)
 
-def suite():
-    return unittest.TestLoader().loadTestsFromTestCase(TestXferFcn)
+    def test_repr(self):
+        """Test __repr__ printout."""
+        Hc = TransferFunction([-1., 4.], [1., 3., 5.])
+        Hd = TransferFunction([2., 3., 0.], [1., -3., 4., 0], 2.0)
+        Hcm = TransferFunction(
+            [ [[0, 1], [2, 3]], [[4, 5], [6, 7]] ],
+            [ [[6, 7], [4, 5]], [[2, 3], [0, 1]] ])
+        Hdm = TransferFunction(
+            [ [[0, 1], [2, 3]], [[4, 5], [6, 7]] ],
+            [ [[6, 7], [4, 5]], [[2, 3], [0, 1]] ], 0.5)
+
+        refs = [
+            "TransferFunction(array([-1.,  4.]), array([1., 3., 5.]))",
+            "TransferFunction(array([2., 3., 0.]),"
+            " array([ 1., -3.,  4.,  0.]), 2.0)",
+            "TransferFunction([[array([1]), array([2, 3])],"
+            " [array([4, 5]), array([6, 7])]],"
+            " [[array([6, 7]), array([4, 5])],"
+            " [array([2, 3]), array([1])]])",
+            "TransferFunction([[array([1]), array([2, 3])],"
+            " [array([4, 5]), array([6, 7])]],"
+            " [[array([6, 7]), array([4, 5])],"
+            " [array([2, 3]), array([1])]], 0.5)" ]
+        self.assertEqual(repr(Hc), refs[0])
+        self.assertEqual(repr(Hd), refs[1])
+        self.assertEqual(repr(Hcm), refs[2])
+        self.assertEqual(repr(Hdm), refs[3])
+
+        # and reading back
+        array = np.array
+        for H in (Hc, Hd, Hcm, Hdm):
+            H2 = eval(H.__repr__())
+            for p in range(len(H.num)):
+                for m in range(len(H.num[0])):
+                    np.testing.assert_array_almost_equal(
+                        H.num[p][m], H2.num[p][m])
+                    np.testing.assert_array_almost_equal(
+                        H.den[p][m], H2.den[p][m])
+            self.assertEqual(H.dt, H2.dt)
+    
+    def test_sample_system_prewarping(self): 
+        """test that prewarping works when converting from cont to discrete time system"""
+        A = np.array([
+            [ 0.00000000e+00,  1.00000000e+00,  0.00000000e+00, 0.00000000e+00],
+            [-3.81097561e+01, -1.12500000e+00,  0.00000000e+00, 0.00000000e+00],
+            [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00, 1.00000000e+00],
+            [ 0.00000000e+00,  0.00000000e+00, -1.66356135e+04, -1.34748470e+01]])
+        B = np.array([
+            [    0.        ], [   38.1097561 ],[    0.     ],[16635.61352143]])
+        C = np.array([[0.90909091, 0.        , 0.09090909, 0.       ],])
+        wwarp = 50
+        Ts = 0.025
+        plant = StateSpace(A,B,C,0)
+        plant = ss2tf(plant)
+        plant_d_warped = plant.sample(Ts, 'bilinear', prewarp_frequency=wwarp)
+        np.testing.assert_array_almost_equal(
+            evalfr(plant, wwarp*1j), 
+            evalfr(plant_d_warped, np.exp(wwarp*1j*Ts)), 
+            decimal=4)
 
 
 if __name__ == "__main__":

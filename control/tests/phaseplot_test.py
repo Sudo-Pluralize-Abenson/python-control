@@ -46,7 +46,7 @@ class TestPhasePlot(unittest.TestCase):
                   [[-2.3056, 2.1], [2.3056, -2.1]], T=6, verbose=False)
 
     def testOscillatorParams(self):
-        m = 1; b = 1; k = 1;			# default values
+        m = 1; b = 1; k = 1;            # default values
         phase_plot(self.oscillator_ode, timepts = [0.3, 1, 2, 3], X0 =
                   [[-1,1], [-0.3,1], [0,1], [0.25,1], [0.5,1], [0.7,1],
                    [1,1], [1.3,1], [1,-1], [0.3,-1], [0,-1], [-0.25,-1],
@@ -77,8 +77,6 @@ class TestPhasePlot(unittest.TestCase):
     def oscillator_ode(self, x, t, m=1., b=1, k=1, extra=None):
         return (x[1], -k/m*x[0] - b/m*x[1])
 
-def suite():
-   return unittest.TestLoader().loadTestsFromTestCase(TestPhasePlot)
 
 if __name__ == '__main__':
     unittest.main()

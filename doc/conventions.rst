@@ -98,7 +98,9 @@ the result will be a discrete time system with the sample time of the latter
 system.  For continuous time systems, the :func:`sample_system` function or
 the :meth:`StateSpace.sample` and :meth:`TransferFunction.sample` methods
 can be used to create a discrete time system from a continuous time system.
-See :ref:`utility-and-conversions`.
+See :ref:`utility-and-conversions`. The default value of 'dt' can be changed by
+changing the values of ``control.config.defaults['statesp.default_dt']`` and 
+``control.config.defaults['xferfcn.default_dt']``.
 
 Conversion between representations
 ----------------------------------
@@ -106,13 +108,6 @@ LTI systems can be converted between representations either by calling the
 constructor for the desired data type using the original system as the sole
 argument or using the explicit conversion functions :func:`ss2tf` and
 :func:`tf2ss`.
-
-Input/output systems
-====================
-
-.. automodule:: control.iosys
-   :no-members:
-   :no-inherited-members:
 
 .. currentmodule:: control
 .. _time-series-convention:
@@ -227,8 +222,14 @@ Selected variables that can be configured, along with their default values:
   * freqplot.feature_periphery_decade (1.0): How many decades to include in the
     frequency range on both sides of features (poles, zeros).
     
-  * statesp.use_numpy_matrix: set the return type for state space matrices to
+  * statesp.use_numpy_matrix (True): set the return type for state space matrices to
     `numpy.matrix` (verus numpy.ndarray)
+
+  * statesp.default_dt and xferfcn.default_dt (None): set the default value of dt when 
+  constructing new LTI systems
+
+  * statesp.remove_useless_states (True): remove states that have no effect on the 
+  input-output dynamics of the system 
 
 Additional parameter variables are documented in individual functions
 
@@ -241,3 +242,4 @@ Functions that can be used to set standard configurations:
     use_fbs_defaults
     use_matlab_defaults
     use_numpy_matrix
+    use_legacy_defaults

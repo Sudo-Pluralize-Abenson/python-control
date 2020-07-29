@@ -11,7 +11,7 @@ import warnings
 
 __all__ = ['defaults', 'set_defaults', 'reset_defaults',
            'use_matlab_defaults', 'use_fbs_defaults',
-           'use_numpy_matrix']
+           'use_legacy_defaults', 'use_numpy_matrix']
 
 # Package level default values
 _control_defaults = {
@@ -52,6 +52,9 @@ def reset_defaults():
 
     from .rlocus import _rlocus_defaults
     defaults.update(_rlocus_defaults)
+
+    from .xferfcn import _xferfcn_defaults
+    defaults.update(_xferfcn_defaults)
 
     from .statesp import _statesp_defaults
     defaults.update(_statesp_defaults)
@@ -114,11 +117,11 @@ def use_matlab_defaults():
 
     The following conventions are used:
         * Bode plots plot gain in dB, phase in degrees, frequency in
-          Hertz, with grids
+          rad/sec, with grids
         * State space class and functions use Numpy matrix objects
 
     """
-    set_defaults('bode', dB=True, deg=True, Hz=True, grid=True)
+    set_defaults('bode', dB=True, deg=True, Hz=False, grid=True)
     set_defaults('statesp', use_numpy_matrix=True)
 
 
@@ -128,7 +131,7 @@ def use_fbs_defaults():
 
     The following conventions are used:
         * Bode plots plot gain in powers of ten, phase in degrees,
-          frequency in Hertz, no grid
+          frequency in rad/sec, no grid
 
     """
     set_defaults('bode', dB=False, deg=True, Hz=False, grid=False)
@@ -156,3 +159,16 @@ def use_numpy_matrix(flag=True, warn=True):
         warnings.warn("Return type numpy.matrix is soon to be deprecated.",
                       stacklevel=2)
     set_defaults('statesp', use_numpy_matrix=flag)
+
+def use_legacy_defaults(version):
+    """ Sets the defaults to whatever they were in a given release.
+
+    Parameters
+    ----------
+    version : string
+        version number of the defaults desired. Currently only supports `0.8.3`. 
+    """
+    if version == '0.8.3': 
+        use_numpy_matrix(True) # alternatively: set_defaults('statesp', use_numpy_matrix=True)
+    else:
+        raise ValueError('''version number not recognized. Possible values are: ['0.8.3']''') 

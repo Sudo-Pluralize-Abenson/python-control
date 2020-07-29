@@ -57,15 +57,20 @@ from numpy import angle, array, empty, finfo, ndarray, ones, \
     polyadd, polymul, polyval, roots, sqrt, zeros, squeeze, exp, pi, \
     where, delete, real, poly, nonzero
 import scipy as sp
-from numpy.polynomial.polynomial import polyfromroots
 from scipy.signal import lti, tf2zpk, zpk2tf, cont2discrete
 from copy import deepcopy
 from warnings import warn
 from itertools import chain
+from re import sub
 from .lti import LTI, timebaseEqual, timebase, isdtime
+from . import config
 
 __all__ = ['TransferFunction', 'tf', 'ss2tf', 'tfdata']
 
+
+# Define module default parameter values
+_xferfcn_defaults = {
+    'xferfcn.default_dt': None}
 
 class TransferFunction(LTI):
 
@@ -88,7 +93,9 @@ class TransferFunction(LTI):
     instance variable and setting it to something other than 'None'.  If 'dt'
     has a non-zero value, then it must match whenever two transfer functions
     are combined.  If 'dt' is set to True, the system will be treated as a
-    discrete time system with unspecified sampling time.
+    discrete time system with unspecified sampling time. The default value of 
+    'dt' is None and can be changed by changing the value of 
+    ``control.config.defaults['xferfcn.default_dt']``.
 
     The TransferFunction class defines two constants ``s`` and ``z`` that
     represent the differentiation and delay operators in continuous and
@@ -117,7 +124,7 @@ class TransferFunction(LTI):
         if len(args) == 2:
             # The user provided a numerator and a denominator.
             (num, den) = args
-            dt = None
+            dt = config.defaults['xferfcn.default_dt']
         elif len(args) == 3:
             # Discrete time transfer function
             (num, den, dt) = args
@@ -133,7 +140,7 @@ class TransferFunction(LTI):
             try:
                 dt = args[0].dt
             except NameError:   # pragma: no coverage
-                dt = None
+                dt = config.defaults['xferfcn.default_dt']
         else:
             raise ValueError("Needs 1, 2 or 3 arguments; received %i."
                              % len(args))
@@ -264,11 +271,9 @@ class TransferFunction(LTI):
 
                 # Center the numerator or denominator
                 if len(numstr) < dashcount:
-                    numstr = (' ' * int(round((dashcount - len(numstr)) / 2)) +
-                              numstr)
+                    numstr = ' ' * ((dashcount - len(numstr)) // 2) + numstr
                 if len(denstr) < dashcount:
-                    denstr = (' ' * int(round((dashcount - len(denstr)) / 2)) +
-                              denstr)
+                    denstr = ' ' * ((dashcount - len(denstr)) // 2) + denstr
 
                 outstr += "\n" + numstr + "\n" + dashes + "\n" + denstr + "\n"
 
@@ -279,8 +284,17 @@ class TransferFunction(LTI):
 
         return outstr
 
-    # represent as string, makes display work for IPython
-    __repr__ = __str__
+    # represent to implement a re-loadable version
+    def __repr__(self):
+        """Print transfer function in loadable form"""
+        if self.issiso():
+            return "TransferFunction({num}, {den}{dt})".format(
+                num=self.num[0][0].__repr__(), den=self.den[0][0].__repr__(),
+                dt=(isdtime(self, strict=True) and ', {}'.format(self.dt)) or '')
+        else:
+            return "TransferFunction({num}, {den}{dt})".format(
+                num=self.num.__repr__(), den=self.den.__repr__(),
+                dt=(isdtime(self, strict=True) and ', {}'.format(self.dt)) or '')
 
     def _repr_latex_(self, var=None):
         """LaTeX representation of transfer function, for Jupyter notebook"""
@@ -302,6 +316,9 @@ class TransferFunction(LTI):
                 numstr = _tf_polynomial_to_string(self.num[i][j], var=var)
                 denstr = _tf_polynomial_to_string(self.den[i][j], var=var)
 
+                numstr = _tf_string_to_latex(numstr, var=var)
+                denstr = _tf_string_to_latex(denstr, var=var)
+
                 out += [r"\frac{", numstr, "}{", denstr, "}"]
 
                 if mimo and j < self.outputs - 1:
@@ -315,7 +332,7 @@ class TransferFunction(LTI):
 
         # See if this is a discrete time system with specific sampling time
         if not (self.dt is None) and type(self.dt) != bool and self.dt > 0:
-            out += ["\quad dt = ", str(self.dt)]
+            out += [r"\quad dt = ", str(self.dt)]
 
         out.append("$$")
 
@@ -636,19 +653,36 @@ class TransferFunction(LTI):
 
         return out
 
-    # Method for generating the frequency response of the system
     def freqresp(self, omega):
-        """Evaluate a transfer function at a list of angular frequencies.
+        """Evaluate the transfer function at a list of angular frequencies.
 
-        mag, phase, omega = self.freqresp(omega)
+        Reports the frequency response of the system,
 
-        reports the value of the magnitude, phase, and angular frequency of
-        the transfer function matrix evaluated at s = i * omega, where omega
-        is a list of angular frequencies, and is a sorted version of the input
-        omega.
+             G(j*omega) = mag*exp(j*phase)
 
+        for continuous time. For discrete time systems, the response is
+        evaluated around the unit circle such that
+
+             G(exp(j*omega*dt)) = mag*exp(j*phase).
+
+        Parameters
+        ----------
+        omega : array_like
+            A list of frequencies in radians/sec at which the system should be
+            evaluated. The list can be either a python list or a numpy array
+            and will be sorted before evaluation.
+
+        Returns
+        -------
+        mag : (self.outputs, self.inputs, len(omega)) ndarray
+            The magnitude (absolute value, not dB or log10) of the system
+            frequency response.
+        phase : (self.outputs, self.inputs, len(omega)) ndarray
+            The wrapped phase in radians of the system frequency response.
+        omega : ndarray or list or tuple
+            The list of sorted frequencies at which the response was
+            evaluated.
         """
-
         # Preallocate outputs.
         numfreq = len(omega)
         mag = empty((self.outputs, self.inputs, numfreq))
@@ -676,7 +710,7 @@ class TransferFunction(LTI):
 
     def pole(self):
         """Compute the poles of a transfer function."""
-        num, den, denorder = self._common_den()
+        _, den, denorder = self._common_den(allow_nonproper=True)
         rts = []
         for d, o in zip(den, denorder):
             rts.extend(roots(d[:o + 1]))
@@ -794,7 +828,7 @@ class TransferFunction(LTI):
 
         return out
 
-    def _common_den(self, imag_tol=None):
+    def _common_den(self, imag_tol=None, allow_nonproper=False):
         """
         Compute MIMO common denominators; return them and adjusted numerators.
 
@@ -803,8 +837,6 @@ class TransferFunction(LTI):
         output numerator array num is modified to use the common
         denominator for this input/column; the coefficient arrays are also
         padded with zeros to be the same size for all num/den.
-        num is an sys.outputs by sys.inputs
-        by len(d) array.
 
         Parameters
         ----------
@@ -812,20 +844,28 @@ class TransferFunction(LTI):
             Threshold for the imaginary part of a root to use in detecting
             complex poles
 
+        allow_nonproper : boolean
+            Do not enforce proper transfer functions
+
         Returns
         -------
         num: array
-            Multi-dimensional array of numerator coefficients. num[i][j]
-            gives the numerator coefficient array for the ith input and jth
-            output, also prepared for use in td04ad; matches the denorder
-            order; highest coefficient starts on the left.
+            n by n by kd where n = max(sys.outputs,sys.inputs)
+                              kd = max(denorder)+1
+            Multi-dimensional array of numerator coefficients. num[i,j]
+            gives the numerator coefficient array for the ith output and jth
+            input; padded for use in td04ad ('C' option); matches the
+            denorder order; highest coefficient starts on the left.
+            If allow_nonproper=True and the order of a numerator exceeds the
+            order of the common denominator, num will be returned as None
 
         den: array
+            sys.inputs by kd
             Multi-dimensional array of coefficients for common denominator
             polynomial, one row per input. The array is prepared for use in
             slycot td04ad, the first element is the highest-order polynomial
-            coefficiend of s, matching the order in denorder, if denorder <
-            number of columns in den, the den is padded with zeros
+            coefficient of s, matching the order in denorder. If denorder <
+            number of columns in den, the den is padded with zeros.
 
         denorder: array of int, orders of den, one per input
 
@@ -839,16 +879,18 @@ class TransferFunction(LTI):
 
         # Machine precision for floats.
         eps = finfo(float).eps
+        real_tol = sqrt(eps * self.inputs * self.outputs)
 
-        # Decide on the tolerance to use in deciding of a pole is complex
+        # The tolerance to use in deciding if a pole is complex
         if (imag_tol is None):
-            imag_tol = 1e-8     # TODO: figure out the right number to use
+            imag_tol = 2 * real_tol
 
         # A list to keep track of cumulative poles found as we scan
         # self.den[..][..]
         poles = [[] for j in range(self.inputs)]
 
         # RvP, new implementation 180526, issue #194
+        # BG, modification, issue #343, PR #354
 
         # pre-calculate the poles for all num, den
         # has zeros, poles, gain, list for pole indices not in den,
@@ -867,32 +909,40 @@ class TransferFunction(LTI):
                     poleset[-1].append([z, p, k, [], 0])
 
         # collect all individual poles
-        epsnm = eps * self.inputs * self.outputs
         for j in range(self.inputs):
             for i in range(self.outputs):
                 currentpoles = poleset[i][j][1]
                 nothave = ones(currentpoles.shape, dtype=bool)
                 for ip, p in enumerate(poles[j]):
-                    idx, = nonzero(
-                        (abs(currentpoles - p) < epsnm) * nothave)
-                    if len(idx):
-                        nothave[idx[0]] = False
+                    collect = (np.isclose(currentpoles.real, p.real,
+                                          atol=real_tol) &
+                               np.isclose(currentpoles.imag, p.imag,
+                                          atol=imag_tol) &
+                               nothave)
+                    if np.any(collect):
+                        # mark first found pole as already collected
+                        nothave[nonzero(collect)[0][0]] = False
                     else:
                         # remember id of pole not in tf
                         poleset[i][j][3].append(ip)
                 for h, c in zip(nothave, currentpoles):
                     if h:
+                        if abs(c.imag) < imag_tol:
+                            c = c.real
                         poles[j].append(c)
                 # remember how many poles now known
                 poleset[i][j][4] = len(poles[j])
 
         # figure out maximum number of poles, for sizing the den
-        npmax = max([len(p) for p in poles])
-        den = zeros((self.inputs, npmax + 1), dtype=float)
+        maxindex = max([len(p) for p in poles])
+        den = zeros((self.inputs, maxindex + 1), dtype=float)
         num = zeros((max(1, self.outputs, self.inputs),
-                     max(1, self.outputs, self.inputs), npmax + 1),
+                     max(1, self.outputs, self.inputs),
+                     maxindex + 1),
                     dtype=float)
         denorder = zeros((self.inputs,), dtype=int)
+
+        havenonproper = False
 
         for j in range(self.inputs):
             if not len(poles[j]):
@@ -901,12 +951,11 @@ class TransferFunction(LTI):
                 for i in range(self.outputs):
                     num[i, j, 0] = poleset[i][j][2]
             else:
-                # create the denominator matching this input polyfromroots
-                # gives coeffs in opposite order from what we use coefficients
-                # should be padded on right, ending at np
-                np = len(poles[j])
-                den[j, np::-1] = polyfromroots(poles[j]).real
-                denorder[j] = np
+                # create the denominator matching this input
+                # coefficients should be padded on right, ending at maxindex
+                maxindex = len(poles[j])
+                den[j, :maxindex+1] = poly(poles[j])
+                denorder[j] = maxindex
 
                 # now create the numerator, also padded on the right
                 for i in range(self.outputs):
@@ -915,25 +964,35 @@ class TransferFunction(LTI):
                     # add all poles not found in the original denominator,
                     # and the ones later added from other denominators
                     for ip in chain(poleset[i][j][3],
-                                    range(poleset[i][j][4], np)):
+                                    range(poleset[i][j][4], maxindex)):
                         nwzeros.append(poles[j][ip])
 
-                    numpoly = poleset[i][j][2] * polyfromroots(nwzeros).real
-                    # print(numpoly, den[j])
-                    # polyfromroots gives coeffs in opposite order => invert
+                    numpoly = poleset[i][j][2] * np.atleast_1d(poly(nwzeros))
+
+                    # td04ad expects a proper transfer function. If the
+                    # numerater has a higher order than the denominator, the
+                    # padding will fail
+                    if len(numpoly) > maxindex + 1:
+                        if allow_nonproper:
+                            havenonproper = True
+                            break
+                        raise ValueError(
+                            self.__str__() +
+                            "is not a proper transfer function. "
+                            "The degree of the numerators must not exceed "
+                            "the degree of the denominators.")
+
                     # numerator polynomial should be padded on left and right
-                    #   ending at np to line up with what td04ad expects...
-                    num[i, j, np + 1 - len(numpoly):np + 1] = numpoly[::-1]
+                    #   ending at maxindex to line up with what td04ad expects.
+                    num[i, j, maxindex+1-len(numpoly):maxindex+1] = numpoly
                     # print(num[i, j])
 
-        if (abs(den.imag) > epsnm).any():
-            print("Warning: The denominator has a nontrivial imaginary part: "
-                  " %f" % abs(den.imag).max())
-        den = den.real
+        if havenonproper:
+            num = None
 
         return num, den, denorder
 
-    def sample(self, Ts, method='zoh', alpha=None):
+    def sample(self, Ts, method='zoh', alpha=None, prewarp_frequency=None):
         """Convert a continuous-time system to discrete time
 
         Creates a discrete-time system from a continuous-time system by
@@ -957,6 +1016,12 @@ class TransferFunction(LTI):
             The generalized bilinear transformation weighting parameter, which
             should only be specified with method="gbt", and is ignored
             otherwise.
+        
+        prewarp_frequency : float within [0, infinity)
+            The frequency [rad/s] at which to match with the input continuous-
+            time system's magnitude and phase (the gain=1 crossover frequency, 
+            for example). Should only be specified with method='bilinear' or 
+            'gbt' with alpha=0.5 and ignored otherwise.
 
         Returns
         -------
@@ -982,8 +1047,13 @@ class TransferFunction(LTI):
         if method == "matched":
             return _c2d_matched(self, Ts)
         sys = (self.num[0][0], self.den[0][0])
-        numd, dend, dt = cont2discrete(sys, Ts, method, alpha)
-        return TransferFunction(numd[0, :], dend, dt)
+        if (method=='bilinear' or (method=='gbt' and alpha==0.5)) and \
+                prewarp_frequency is not None:
+            Twarp = 2*np.tan(prewarp_frequency*Ts/2)/prewarp_frequency
+        else: 
+            Twarp = Ts
+        numd, dend, _ = cont2discrete(sys, Twarp, method, alpha)
+        return TransferFunction(numd[0, :], dend, Ts)
 
     def dcgain(self):
         """Return the zero-frequency (or DC) gain
@@ -1059,8 +1129,6 @@ def _tf_polynomial_to_string(coeffs, var='s'):
 
     for k in range(len(coeffs)):
         coefstr = '%.4g' % abs(coeffs[k])
-        if coefstr[-4:] == '0000':
-            coefstr = coefstr[:-5]
         power = (N - k)
         if power == 0:
             if coefstr != '0':
@@ -1095,6 +1163,18 @@ def _tf_polynomial_to_string(coeffs, var='s'):
             thestr = "-%s" % (newstr,)
         else:
             thestr = newstr
+    return thestr
+
+
+def _tf_string_to_latex(thestr, var='s'):
+    """ make sure to superscript all digits in a polynomial string
+        and convert float coefficients in scientific notation
+        to prettier LaTeX representation """
+    # TODO: make the multiplication sign configurable
+    expmul = r' \\times'
+    thestr = sub(var + r'\^(\d{2,})', var + r'^{\1}', thestr)
+    thestr = sub(r'[eE]\+0*(\d+)', expmul + r' 10^{\1}', thestr)
+    thestr = sub(r'[eE]\-0*(\d+)', expmul + r' 10^{-\1}', thestr)
     return thestr
 
 
