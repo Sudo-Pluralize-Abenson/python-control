@@ -47,12 +47,6 @@ class design_region():
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
-        # Converts a numerical based input into the symbolic expression
-        minval = self.x[0]
-        maxval = self.x[1]
-        x_expr = ((self.x_s >= minval) & (self.x_s <= maxval))
-        self.xy_based(x_expr)
-        
         if not self.is_calling_method_init():
             # x to dr_xy
             self.dr_xy = self.dr_xy & self.x_r
@@ -81,11 +75,6 @@ class design_region():
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
-        minval = self.y[0]
-        maxval = self.y[1]
-        y_expr = ((self.y_s >= minval) & (self.y_s <= maxval))
-        self.xy_based(y_expr)
-        
         if not self.is_calling_method_init():
             # y to dr_xy
             self.dr_xy = self.dr_xy & self.y_r
@@ -113,11 +102,6 @@ class design_region():
             raise Exception('r must be nonnegative')
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
-        
-        minval = self.r[0]
-        maxval = self.r[1]
-        r_expr = ((self.r_s >= minval) & (self.r_s <= maxval))
-        self.rt_based(r_expr)
         
         if not self.is_calling_method_init():
             # r to dr_rt
@@ -151,11 +135,6 @@ class design_region():
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
-        minval = self.theta[0]
-        maxval = self.theta[1]
-        theta_expr = ((self.theta_s >= minval) & (self.theta_s <= maxval))
-        self.rt_based(theta_expr)
-        
         if not self.is_calling_method_init():
             # r to dr_rt
             self.dr_rt = self.dr_rt & self.theta_r
@@ -181,11 +160,6 @@ class design_region():
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
-        minval = self.z[0]
-        maxval = self.z[1]
-        z_expr = ((self.z_s >= minval) & (self.z_s <= maxval))
-        self.zw_based(z_expr)
-        
     #
     @property
     def wn(self):
@@ -196,11 +170,6 @@ class design_region():
     def wn(self,value):
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
-        
-        minval = self.wn[0]
-        maxval = self.wn[1]
-        wn_expr = ((self.wn_s >= minval) & (self.wn_s <= maxval))
-        self.zw_based(wn_expr)
         
     #
     @property
@@ -213,11 +182,6 @@ class design_region():
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
-        minval = self.OS[0]
-        maxval = self.OS[1]
-        OS_expr = ((self.OS_s >= minval) & (self.OS_s <= maxval))
-        self.OS_based(OS_expr)
-        
     #
     @property
     def Ts(self):
@@ -228,11 +192,6 @@ class design_region():
     def Ts(self,value):
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
-        
-        minval = self.Ts[0]
-        maxval = self.Ts[1]
-        Ts_expr = ((self.Ts_s >= minval) & (self.Ts_s <= maxval))
-        self.Ts_based(Ts_expr)
         
     #
     @property
@@ -255,11 +214,6 @@ class design_region():
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
-        minval = self.Tp[0]
-        maxval = self.Tp[1]
-        Tp_expr = ((self.Tp_s >= minval) & (self.Tp_s <= maxval))
-        self.Tp_based(Tp_expr)
-
     def attribute_setter(self,value,attribute):
         # this gets called in every setter!
         # pack into array if needed
