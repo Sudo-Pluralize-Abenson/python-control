@@ -615,6 +615,9 @@ class design_region():
                 Tp_rt = self.zw_to_rt(expr2)
                 self.dr_rt(Tp_rt)
 
+        if plot==True:
+            self.plot_dr()
+
 
         def Ts_based(self, expr):
                 #############################################
@@ -635,6 +638,9 @@ class design_region():
                 Ts_rt = self.xy_to_rt(expr2)
                 self.dr_rt(Ts_rt)
 
+        if plot==True:
+            self.plot_dr()
+
 
         def xy_based(self, expr):
                 #############################################
@@ -653,6 +659,8 @@ class design_region():
                 xy_rt = self.xy_to_rt(expr)
                 self.dr_rt(xy_rt)
 
+        if plot==True:
+            self.plot_dr()
 
 
         def zw_based(self, expr):
