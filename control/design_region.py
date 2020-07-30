@@ -116,7 +116,6 @@ class design_region():
                 self.in_rt_to_xy()
                 # TODO
         else:
-            print(f"dr_rt: {self.r_r}")
             self.dr_rt = self.r_r
     #
     @property
