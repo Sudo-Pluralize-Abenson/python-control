@@ -34,8 +34,6 @@ print(dr1.dr_rt) # updated!
 print(dr1.r) # updated!
 print(dr1.theta) # updated!
 
-dr1.theta = [pi/2,pi]  #won't plot after this because we're not properly updating dr_xy
-
 print(dr1.dr_xy)
 
 # plot design region
