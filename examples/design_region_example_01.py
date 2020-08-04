@@ -6,7 +6,9 @@ Date (initial): 3 October 2019
 
 import numpy as np
 from sympy import *
+from sympy import core
 import matplotlib.pyplot as plt
+from scipy.constants import pi
 import sys
 sys.path.append(".") # Adds higher directory to python modules path.
 sys.path.append("..") # Adds higher directory to python modules path.import control as ct
@@ -33,7 +35,6 @@ print(dr1.dr_rt) # updated!
 print(dr1.r) # updated!
 print(dr1.theta) # updated!
 
-dr1.theta = [pi/2,pi] # won't plot after this because we're not properly updating dr_xy
 
 print(dr1.dr_xy)
 

@@ -20,7 +20,7 @@ Date (initial): 2 October 2019
 
 # external modules
 import numpy as np
-from sympy import *
+from sympy import core
 import inspect
 from scipy.optimize import minimize
 import warnings
