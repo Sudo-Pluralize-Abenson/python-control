@@ -25,6 +25,8 @@ import inspect
 from scipy.optimize import minimize
 import warnings
 import sys
+from sympy import Symbol # update 8/6 Arif. Fixes "Symbol not defiend error"
+from sympy import * # update 8/6 : Arif. Fixes error with infinity sign 
 
 # variables to expose for import
 __all__ = ['design_region'] 
