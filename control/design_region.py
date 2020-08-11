@@ -12,8 +12,12 @@ Alec J Dryden
 Kenneth S Echevaria
 Akara Hay
 Dane P Webb
-
-Marcelino Figueroa (RIP)
+Arif Islam
+Alexander Benson
+Aiden Hunter
+Megan Taylor
+Parth Gogate
+Marcelino Figueroa
 
 Date (initial): 2 October 2019
 """
