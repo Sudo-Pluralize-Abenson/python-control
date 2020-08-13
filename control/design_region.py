@@ -406,6 +406,20 @@ class design_region():
         x,y = self.co_rt_to_xy(r,t)
         return x,y
 
+    ## Parameter to Coordinate Transformations
+    def co_OS_to_z(self, OS):
+        z = -ln(OS)/sqrt(pi^2 + ln(OS)^2)
+        return z
+
+    def co_Ts_to_x(self, Ts):
+        x = -4/Ts
+        return x
+
+    def co_TsOS_to_xy(self, Ts, OS):
+        x = self.co_Ts_to_x(Ts)
+        y = -x*pi/ln(OS)
+        return x,y
+
     ## interval maps
 
     def in_xy_to_rt(self,is_x):
