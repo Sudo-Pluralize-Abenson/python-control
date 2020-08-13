@@ -411,7 +411,7 @@ class design_region():
 
     ## Parameter to Coordinate Transformations
     def co_OS_to_z(self, OS):
-        z = -ln(OS)/sqrt(pi^2 + ln(OS)^2)
+        z = -ln(OS)/sqrt(pi**2 + ln(OS)**2)
         return z
 
     def co_Ts_to_x(self, Ts):
