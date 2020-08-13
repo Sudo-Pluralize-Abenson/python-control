@@ -18,10 +18,10 @@ Variables and Parameters
 The permissible design region parameters are:
 - x, y: 
     - X corresponds to the real axis of the complex plane
-    - y corresponds to the imaginary axis of the complex plane
+    - y corresponds to the imaginary axis of the complex plane, only positive values considered
 - r, theta:
     - r is the magnitude of a vector on the complex plane
-    - theta is the anticlockwise angle from the positive real axis to the vector
+    - theta is the anticlockwise angle from the positive real axis to the vector, in radians
 - z, wn:
     - z is short for zeta, the damping ratio in this context
     - wn is short for omega subscript n, the natural frequency

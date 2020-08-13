@@ -378,7 +378,10 @@ class design_region():
 
     def co_xy_to_rt(self,x,y):
         r = sqrt(x**2+y**2)
-        t = atan(y/x)-pi
+        if x == 0:
+            t = pi/2
+        else:
+            t = atan(y/x)-pi
         return r,t
 
     def co_rt_to_xy(self,r,t):
