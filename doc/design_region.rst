@@ -1,16 +1,16 @@
-# Design region class (from the design_region module)
+Design region class (from the design_region module)
 -------------------------------------------
 
 This documents the `design_region` class from the `design_region.py` module.
 
 
-## Introduction
+Introduction
 ============
 
 The 'design_region' module is intended to help document and define the design limits of a complex-plane dominant-pole system. All converted values are extrapolated using second-order approximations.
 
 
-## Variables and Parameters
+Variables and Parameters
 ========================
 
 The permissible design region parameters are:
@@ -30,7 +30,7 @@ The permissible design region parameters are:
     - Tr is the rise time
     - Tp is the peak time
 
-## Use
+Use
 ===
 Example code can be found at
 https://github.com/ricopicone/python-control/blob/design_region/examples/design_region_example_01.py
@@ -47,20 +47,20 @@ General use of the design region will follow the procedure below:
 
 4. Plot design region
 
-## Public Methods and Functions
+Public Methods and Functions
 ============================
 
-### Design Region Mapping Methods: 
+Design Region Mapping Methods: 
 
-#### Purpose: 
+Purpose: 
 
 These methods take symbolic expressions from one coordinate paradigm and pass those expressions to another paradigm. 
 
-#### Use: 
+Use: 
 
 The action of passing one set of symbolic expressions from one paradigm to the other is done when the method is called, no arguments are to be passed. 
 
-#### List of Methods:
+List of Methods:
     - zw_to_rt: Maps damping ratio and natural frequency coordinates to magnitude and theta
     - rt_to_zw: Maps magnitude and theta coordinates to damping ratio and natural frequency
     - rt_to_xy: Maps magnitude and theta coordinates to complex plane coordinates, x being real and y being imaginary
@@ -80,17 +80,17 @@ print(dr1.xy)
 
 "(1 <= sqrt(x_s**2 + y_s**2)) & (sqrt(x_s**2 + y_s**2) <= 4) & (atan(y_s/x_s) - pi <= pi) & (atan(y_s/x_s) - pi >= pi/2)"
 
-### Coordinate Tranformations:
+Coordinate Tranformations:
 
-#### Purpose: 
+Purpose: 
 
 These functions convert values (symbolic and float have both been confirmed to work) from one coordinate paradigm to another, using the second order approximation where appropriate.
 
-#### Use: 
+Use: 
 
 Most functions require two arguments with the exception of 'co_Ts_to_x' and 'co_OS_to_z' which simply require one. The functions then return transformed values corresponding to the coordinate paradigm.
 
-#### List of Functions:
+List of Functions:
     - co_xy_to_rt: Converts complex plane coordinates to magnitude and theta
     - co_rt_to_xy: Converts magnitude and theta coordinates to complex plane coordinates, x being real and y being imaginary
     - co_zw_to_rt: Converts damping ratio and natural frequency coordinates to magnitude and theta
@@ -108,18 +108,18 @@ print((dr1.co_OS_to_z(0.10)).evalf)
 "0.591155033798897"
 
 
-#### Interval Maps
+Interval Maps
 
 *Documentation Pending*
 
-#### Design Region Projections 
+Design Region Projections 
 
 *Documentation Pending*
 
-#### Plotting 
+Plotting 
 
 *Documentation Pending*
 
-## Private Methods and Functions
+Private Methods and Functions
 =============================
 
