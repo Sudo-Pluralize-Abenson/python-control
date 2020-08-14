@@ -51,14 +51,16 @@ class design_region():
         # check for valid values
         value = self.normalize_input(value)
         if value[1] > 0:
-            raise Exception('x must be nonpositive')
+            raise Exception('x must be negative for stability')
         the_p = inspect.currentframe().f_code.co_name
+        # this sets self.x=value
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
-        if not self.is_calling_method_init():
+        
+        if not self.is_calling_method_init(): # if not first call
             # x to dr_xy
             self.dr_xy = self.dr_xy & self.x_r
-            if not self.is_calling_method_setter():
+            if not self.is_calling_method_setter(): #call not from setter
                 # avoids loops
                 # dr_xy to other drs
                 self.xy_to_rt()
@@ -66,7 +68,7 @@ class design_region():
                 # interval maps
                 self.in_xy_to_rt(is_x=True)
                 # TODO ...
-        else:
+        else: # if it is first call
             self.dr_xy = self.x_r
     #
     @property
@@ -78,8 +80,8 @@ class design_region():
     def y(self,value):
         # check for valid values
         value = self.normalize_input(value)
-        if value[0] < 0:
-            raise Exception('y must be nonnegative')
+        #if value[0] < 0:
+        #    raise Exception('y must be nonnegative')
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
@@ -107,7 +109,7 @@ class design_region():
         # check for valid values
         value = self.normalize_input(value)
         if value[0] < 0:
-            raise Exception('r must be nonnegative')
+            raise Exception('r must be nonnegative [magnitude cannot be negative]')
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
@@ -136,6 +138,7 @@ class design_region():
         # check for valid values
         value = self.normalize_input(value)
         value_in = Interval(*value)
+        print(value_in)
         value_valid = Interval(pi/2,pi)
         if not (value_in-value_valid).is_empty:
             raise Exception('theta must be between pi/2 and pi')
@@ -270,7 +273,7 @@ class design_region():
         self.x_s = Symbol('x_s',real=True)
         self.x = [-oo,0]
         self.y_s = Symbol('y_s',real=True)
-        self.y = [0,oo]
+        self.y = [-oo,oo]
         self.r_s = Symbol('r_s',real=True)
         self.r = [0,oo]
         self.theta_s = Symbol('theta_s',real=True)
