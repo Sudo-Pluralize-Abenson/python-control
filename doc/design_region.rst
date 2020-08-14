@@ -1,7 +1,7 @@
-Design region class (from the design_region module)
+Design region class 
 -------------------------------------------
 
-This documents the `design_region` class from the `design_region.py` module.
+This documents the `design_region` class from the control package. The main objective of this class is to aid in the design of a controller.
 
 
 Introduction
@@ -16,8 +16,8 @@ Variables and Parameters
 The permissible design region parameters are:
 
 * x, y: 
-    - X corresponds to the real axis of the complex plane
-    - y corresponds to the imaginary axis of the complex plane, only positive values considered
+    - X corresponds to the real axis of the complex plane.
+    - y corresponds to the imaginary axis of the complex plane.
 * r, theta:
     - r is the magnitude of a vector on the complex plane
     - theta is the anticlockwise angle from the positive real axis to the vector, in radians
