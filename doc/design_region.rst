@@ -44,4 +44,60 @@ General use of the design region will follow the procedure below:
 3. Convert region parameters as desired
 4. Plot design region
 
+Public Methods and Functions
+============================
+
+* Design Region Mapping Methods: 
+
+Purpose: These methods take symbolic expressions from one coordinate paradigm and pass those expressions to another paradigm. 
+
+Use: The action of passing one set of symbolic expressions from one paradigm to the other is done when the method is called, no arguments are to be passed. 
+
+List:
+    - zw_to_rt: Maps damping ratio and natural frequency coordinates to magnitude and theta
+    - rt_to_zw: Maps magnitude and theta coordinates to damping ratio and natural frequency
+    - rt_to_xy: Maps magnitude and theta coordinates to complex plane coordinates, x being real and y being imaginary
+    - xy_to_rt: Maps complex plane coordinates to magnitude and theta
+    - zw_to_xy: Maps damping ratio and natural frequency coordinates to complex plane coordinates
+    - xy_to_zw: Maps complex plane coordinates to damping ratio and natural frequency
+
+example:
+dr1.r = [1,4]
+dr1.t = [3*pi/4,7*pi/8]
+dr1.xy = dr1.rt_to_xy()
+print(dr1.xy)
+
+"(1 <= sqrt(x_s**2 + y_s**2)) & (sqrt(x_s**2 + y_s**2) <= 4) & (atan(y_s/x_s) - pi <= pi) & (atan(y_s/x_s) - pi >= pi/2)"
+
+* Coordinate Tranformations:
+
+Purpose: These functions convert values (symbolic and float have both been confirmed to work) from one coordinate paradigm to another, using the second order approximation where appropriate.
+
+Use: Most functions require two arguments with the exception of 'co_Ts_to_x' and 'co_OS_to_z' which simply require one. The functions then return transformed values corresponding to the coordinate paradigm.
+
+List:
+    - co_xy_to_rt: Converts complex plane coordinates to magnitude and theta
+    - co_rt_to_xy: Converts magnitude and theta coordinates to complex plane coordinates, x being real and y being imaginary
+    - co_zw_to_rt: Converts damping ratio and natural frequency coordinates to magnitude and theta
+    - co_rt_to_zw: Converts magnitude and theta coordinates to damping ratio and natural frequency
+    - co_xy_to_zw: Maps complex plane coordinates to damping ratio and natural frequency
+    - co_zw_to_xy: Maps damping ratio and natural frequency coordinates to complex plane coordinates
+    - co_OS_to_z: Converts an overshoot ratio (not percent) requirement to the corresponding damping ratio
+    - co_Ts_to_x: Converts a settling time requirement to the corresponding real axis value (for differential compensators)
+    - co_TsOS_to_xy: Converts overshoot ratio and settling time requirements to corresponding real and imaginary axis values (for differential compensators)
+
+example:
+print((dr1.co_OS_to_z(0.10)).evalf)
+
+"0.591155033798897"
+
+
+* Interval Maps
+
+* Design Region Projections 
+
+* Plotting 
+
+Private Methods and Functions
+=============================
 
