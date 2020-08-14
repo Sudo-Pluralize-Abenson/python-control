@@ -8,12 +8,12 @@ Date (initial): 3 October 2019
 """
 #importing the control to get control.design_region()
 from control import design_region
-
+from scipy import pi
 #printing doc string for the class and all the methods
 help(design_region)
 
 #define pi
-pi=3.14159 
+#pi=3.14159
 
 #more digits of pi if needed
 #3.14159265358979323846264338327950288419716939937510 
@@ -24,7 +24,7 @@ dr1 = design_region()
 # r and theta test
 
 dr1.r = [2,4]
-dr1.theta = [-pi/2,pi]
+dr1.theta = [pi/2,pi]
 
 # plot design region
 dr1.plot_dr()
@@ -37,7 +37,7 @@ dr1 = design_region()
 
 # x and y test
 dr1.x = [-1,-4]
-dr1.y = [-2,pi]
+dr1.y = [0,pi]
 
 # plot design region
 dr1.plot_dr()
