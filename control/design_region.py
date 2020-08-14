@@ -58,17 +58,17 @@ class design_region():
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
         
-        if not self.is_calling_method_init(): # if not first call
+        if not self.is_calling_method_init(): # if not init call
             # x to dr_xy
             self.dr_xy = self.dr_xy & self.x_r
-            if not self.is_calling_method_setter(): #call not from setter
-                # avoids loops
-                # dr_xy to other drs
-                self.xy_to_rt()
-                self.xy_to_zw()
-                # interval maps
-                self.in_xy_to_rt(is_x=True)
-                # TODO ...
+            # if not self.is_calling_method_setter(): #call not from setter
+            #     # avoids loops
+            #     # dr_xy to other drs
+            #     self.xy_to_rt()
+            #     self.xy_to_zw()
+            #     # interval maps
+            #     self.in_xy_to_rt(is_x=True)
+            #     # TODO ...
         else: # if it is first call
             self.dr_xy = self.x_r
     #
@@ -90,14 +90,14 @@ class design_region():
         if not self.is_calling_method_init():
             # y to dr_xy
             self.dr_xy = self.dr_xy & self.y_r
-            if not self.is_calling_method_setter():
-                # avoids loops
-                # dr_xy to other drs
-                self.xy_to_rt()
-                self.xy_to_zw()
-                # interval maps
-                self.in_xy_to_rt(is_x=False)
-                # TODO
+            # if not self.is_calling_method_setter():
+            #     # avoids loops
+            #     # dr_xy to other drs
+            #     self.xy_to_rt()
+            #     self.xy_to_zw()
+            #     # interval maps
+            #     self.in_xy_to_rt(is_x=False)
+            #     # TODO
         else:
             self.dr_xy = self.dr_xy & self.x_r # region exists because x is __init__ialized first
     #
@@ -119,14 +119,14 @@ class design_region():
         if not self.is_calling_method_init():
             # r to dr_rt
             self.dr_rt = self.dr_rt & self.r_r
-            if not self.is_calling_method_setter():
-                print('... r to other stuff')
-                # avoids loops
-                # dr_rt to other drs
-                self.rt_to_xy()
-                self.rt_to_zw()
-                # interval maps
-                self.in_rt_to_xy()
+            #if not self.is_calling_method_setter():
+                # print('... r to other stuff')
+                # # avoids loops
+                # # dr_rt to other drs
+                # self.rt_to_xy()
+                # self.rt_to_zw()
+                # # interval maps
+                # self.in_rt_to_xy()
                 # TODO
         else:
             self.dr_rt = self.r_r
@@ -142,23 +142,23 @@ class design_region():
         # check for valid values
         value = self.normalize_input(value)
         value_in = Interval(*value)
-        print(value_in)
-        value_valid = Interval(pi/2,pi)
-        if not (value_in-value_valid).is_empty:
-            raise Exception('theta must be between pi/2 and pi')
+        #print(value_in)
+        #value_valid = Interval(pi/2,pi)
+        #if not (value_in-value_valid).is_empty:
+        #    raise Exception('theta must be between pi/2 and pi')
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
         if not self.is_calling_method_init():
             # r to dr_rt
             self.dr_rt = self.dr_rt & self.theta_r
-            if not self.is_calling_method_setter():
+            #if not self.is_calling_method_setter():
                 # avoids loops
                 # dr_rt to other drs
-                self.rt_to_xy()
-                self.rt_to_zw()
+                #self.rt_to_xy()
+                #self.rt_to_zw()
                 # interval maps
-                self.in_rt_to_xy()
+                #self.in_rt_to_xy()
             # TODO
         else:
             self.dr_rt = self.dr_rt & self.theta_r # region exists because x is __init__ialized first
@@ -281,7 +281,7 @@ class design_region():
         self.r_s = Symbol('r_s',real=True)
         self.r = [0,oo]
         self.theta_s = Symbol('theta_s',real=True)
-        self.theta = [pi/2,pi]
+        self.theta = [-oo,oo]
         self.z_s = Symbol('z_s',real=True)
         self.z = [0,1] # let's only worry about underdamped for now
         self.wn_s = Symbol('wn_s',real=True)
@@ -550,5 +550,7 @@ class design_region():
                 y_var=self.y_s,
                 xlabel='Re',
                 ylabel='Im')
+        self.flagxy=False
+        self.flagrt=False
         p.show()
 

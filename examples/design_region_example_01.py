@@ -15,19 +15,27 @@ import control as ct
 dr1 = ct.design_region()
 
 # print attributes and defaults
-# print(dr1.__dict__)
+help(ct.design_region())
 
 # set and print some parameters
+# r and theta test
 
-# dr1.x = [-5,-2]
 dr1.r = [2,4]
-dr1.theta = [pi/2,pi]
-#dr1.xy = dr1.rt_to_xy()
-#print(dr1.xy)
+dr1.theta = [-pi,pi]
 
 # plot design region
 dr1.plot_dr()
 
+#resetting design_region for new parameters
+#need to re-initialize 
+dr1 = ct.design_region()
+
+# x and y test
+dr1.x = [-2,-4]
+dr1.y = [-pi/2,pi]
+
+# plot design region
+dr1.plot_dr()
 # stuff that's broken
 
 # # projection stuff?
