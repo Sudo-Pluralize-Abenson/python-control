@@ -13,7 +13,7 @@ The 'design_region' module is intended to help document and define the design li
 Variables and Parameters
 ========================
 
-The permissible design region parameters are:
+**Permissible design region parameters are:**
 
 * x, y: 
     - X corresponds to the real axis of the complex plane.
@@ -29,6 +29,14 @@ The permissible design region parameters are:
     - Ts is the settling time
     - Tr is the rise time
     - Tp is the peak time
+
+**Naming Conventions**
+
+*These conventions are exclusive to private/internal variables*
+
+- var*_s* indicates a symbolic variable
+- var*_r* indicates a numeric range
+
 
 Use
 ===
