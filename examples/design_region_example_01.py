@@ -20,8 +20,10 @@ dr1 = ct.design_region()
 # set and print some parameters
 
 # dr1.x = [-5,-2]
+dr1.r = [1,4]
 dr1.t = [3*pi/4,7*pi/8]
-print(dr1.t)
+dr1.xy = dr1.rt_to_xy()
+print(dr1.xy)
 
 # plot design region
 dr1.plot_dr()
