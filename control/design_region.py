@@ -22,9 +22,8 @@ Marcelino Figueroa
 Date (initial): 2 October 2019
 """
 
-# external modules
+# import necessary external modules
 import numpy as np
-#from sympy import core
 import inspect
 from scipy.optimize import minimize
 import warnings
@@ -41,14 +40,25 @@ class design_region():
     
     '''
     # attribute getters and setters
-    @property
+    # @ is property decorator that allow us to define a method and access it like an attribute
+    @property 
     def x(self):
+        '''
+        This is a data descriptor for self.x
+        '''
         the_p = inspect.currentframe().f_code.co_name
         attribute = getattr(self,'_'+the_p)
         return self.attribute_getter(attribute)
     @x.setter
     def x(self,value):
-        self.flagxy=True
+        '''
+        This is a setter for self.x
+        It takes a input value in the form of list
+        The function normalizes the input if it is not a list and then sorts the input
+        self.x is set to the input interval
+        and the self.x is used to update self.dr_xy [design region xy]
+        '''
+        self.flagxy=True#flag for plotting both rt and xy
         # check for valid values
         value = self.normalize_input(value)
         if value[1] > 0:
@@ -74,12 +84,24 @@ class design_region():
     #
     @property
     def y(self):
+        '''
+        This is a data descriptor for self.y
+        '''
         the_p = inspect.currentframe().f_code.co_name
         attribute = getattr(self,'_'+the_p)
         return self.attribute_getter(attribute)
     @y.setter
     def y(self,value):
-        self.flagxy=True
+        '''
+        
+        This is a setter for self.y
+        It takes a input value in the form of list
+        The function normalizes the input if it is not a list and then sorts the input
+        self.y is set to the input interval
+        and the self.y is used to update self.dr_xy [design region xy]
+        
+        '''
+        self.flagxy=True#flag for plotting both rt and xy
         # check for valid values
         value = self.normalize_input(value)
         #if value[0] < 0:
@@ -103,12 +125,24 @@ class design_region():
     #
     @property
     def r(self):
+        '''
+        This is a data descriptor for self.r
+        '''
         the_p = inspect.currentframe().f_code.co_name
         attribute = getattr(self,'_'+the_p)
         return self.attribute_getter(attribute)
     @r.setter
     def r(self,value):
-        self.flagrt=True
+        '''
+        
+        This is a setter for self.r
+        It takes a input value in the form of list
+        The function normalizes the input if it is not a list and then sorts the input
+        self.r is set to the input interval
+        and the self.r is used to update self.dr_rt [design region rt]
+        
+        '''
+        self.flagrt=True#flag for plotting both rt and xy
         # check for valid values
         value = self.normalize_input(value)
         if value[0] < 0:
@@ -133,12 +167,24 @@ class design_region():
     #
     @property
     def theta(self):
+        '''
+        This is a data descriptor for self.theta
+        '''
         the_p = inspect.currentframe().f_code.co_name
         attribute = getattr(self,'_'+the_p)
         return self.attribute_getter(attribute)
     @theta.setter
     def theta(self,value):
-        self.flagrt=True
+        '''
+        
+        This is a setter for self.theta
+        It takes a input value in the form of list
+        The function normalizes the input if it is not a list and then sorts the input
+        self.theta is set to the input interval
+        and the self.theta is used to update self.dr_rt [design region rt]
+        
+        '''
+        self.flagrt=True#flag for plotting both rt and xy
         # check for valid values
         value = self.normalize_input(value)
         value_in = Interval(*value)
@@ -166,69 +212,109 @@ class design_region():
     #
     @property
     def z(self):
+        '''
+        This is a data descriptor for self.z
+        '''
         the_p = inspect.currentframe().f_code.co_name
         attribute = getattr(self,'_'+the_p)
         return self.attribute_getter(attribute)
     @z.setter
     def z(self,value):
+        '''
+        This is a setter for self.z
+        '''
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
     #
     @property
     def wn(self):
+        '''
+        This is a data descriptor for self.wn
+        '''
         the_p = inspect.currentframe().f_code.co_name
         attribute = getattr(self,'_'+the_p)
         return self.attribute_getter(attribute)
     @wn.setter
     def wn(self,value):
+        '''
+        This is a setter for self.wn
+        '''
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
     #
     @property
     def OS(self):
+        '''
+        This is a data descriptor for self.OS
+        '''
         the_p = inspect.currentframe().f_code.co_name
         attribute = getattr(self,'_'+the_p)
         return self.attribute_getter(attribute)
     @OS.setter
     def OS(self,value):
+        '''
+        This is a setter for self.OS
+        '''
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
     #
     @property
     def Ts(self):
+        '''
+        This is a data descriptor for self.Ts
+        '''
         the_p = inspect.currentframe().f_code.co_name
         attribute = getattr(self,'_'+the_p)
         return self.attribute_getter(attribute)
     @Ts.setter
     def Ts(self,value):
+        '''
+        This is a setter for self.Ts
+        '''
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
     #
     @property
     def Tr(self):
+        '''
+        This is a data descriptor for self.Tr
+        '''
         the_p = inspect.currentframe().f_code.co_name
         attribute = getattr(self,'_'+the_p)
         return self.attribute_getter(attribute)
     @Tr.setter
     def Tr(self,value):
+        '''
+        This is a setter for self.Tr
+        '''
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
     #
     @property
     def Tp(self):
+        '''
+        This is a data descriptor for self.Tp
+        '''
         the_p = inspect.currentframe().f_code.co_name
         attribute = getattr(self,'_'+the_p)
         return self.attribute_getter(attribute)
     @Tp.setter
     def Tp(self,value):
+        '''
+        This is a setter for self.Tp
+        '''
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
         
     def attribute_setter(self,value,attribute):
+        '''
+        This function is used to set x, y, r and theta equal to the range given
+        eg. self.x=[-4,-1]
+        '''
         # this gets called in every setter!
         # pack into array if needed
         value = self.normalize_input(value)
@@ -242,22 +328,34 @@ class design_region():
         return value
 
     def normalize_input(self,value):
+        '''
+        This function checks if the input is a list and then sorts the input for analysis
+        '''
         if not isinstance(value,list):
             value = [value,value] # make array
         value.sort() # works with oo
         return value
 
     def attribute_getter(self,attribute):
+        '''
+        This function is used by data descriptor functions to define x,y,r and theta
+        '''
         if attribute[0]==attribute[1]:
             return attribute[0]
         else:
             return attribute
 
     def is_calling_method_init(self):
+        '''
+        This function checks if the function is being called from init
+        '''
         return inspect.stack()[2].function == '__init__'
 
     def is_calling_method_setter(self):
-        # checks to see if this is part of a different interval setter call
+        '''
+        This function checks to see if this is part of a different interval setter call
+        '''
+        
         try: # stack is shorter when not a different interval setter, but I don't want to trust this completely
             calling_method = inspect.stack()[3].function
             # still text is_setter because paranoid
@@ -268,12 +366,21 @@ class design_region():
 
     # class attributes go here
     def __init__(self):
-        # initialize instance attributes
-        # _s versions are internal symbolic variables
-        # _r versions are internal interval inequalities for
-        #     each variable. These are really _projections_
-        #     because they can depend on other variables.
-        # variables
+        '''
+        initialize instance attributes
+        
+        _s versions are internal symbolic variables
+        _r versions are internal interval inequalities foreach variable.
+        
+        These are really _projections_ because they can depend 
+        on other variables.
+        
+        design regions are in three coordinate systems:
+            dr_xy: x,y
+            dr_rt: r,theta
+            dr_zw: z,wn
+        '''
+        #variables
         self.x_s = Symbol('x_s',real=True)
         self.x = [-oo,0]
         self.y_s = Symbol('y_s',real=True)
@@ -294,20 +401,28 @@ class design_region():
         self.Tr = [0,oo]
         self.Tp_s = Symbol('Tp_s',real=True)
         self.Tp = [0,oo]
+        
         # design regions 
-        # design regions are in three coordinate systems:
-        #         dr_xy: x,y
-        #         dr_rt: r,theta
-        #         dr_zw: z,wn
+
         self.dr_xy = (self.x_r)&(self.y_r)
         self.dr_rt = (self.r_r)&(self.theta_r)
         self.dr_zw = (self.z_r)&(self.wn_r)
+        
+        #flag for plotting both rt and xy
+        
         self.flagrt=False
         self.flagxy=False
 
     # methods
     ## design region maps
     def zw_to_rt(self):
+        '''
+        This function returns self.dr_rt given self.dr_zw
+        
+        The function substitutes the wn and z (in the self.dr_zw)
+        with the equations for r and theta.
+        
+        '''
         r = self.r_s
         theta = self.theta_s
         z = self.z_s
@@ -319,6 +434,13 @@ class design_region():
         return self.dr_rt
 
     def rt_to_zw(self):
+        '''
+        This function returns self.dr_zw given self.dr_rt
+        
+        The function substitutes the r and theta (in the self.dr_rt)
+        with the equations for z and wn.
+        
+        '''
         r = self.r_s
         theta = self.theta_s
         z = self.z_s
@@ -330,6 +452,13 @@ class design_region():
         return self.dr_zw
 
     def rt_to_xy(self):
+        '''
+        This function returns self.dr_xy given self.dr_rt
+        
+        The function substitutes the r and theta (in the self.dr_rt)
+        with the equations for x and y.
+        
+        '''
         x = self.x_s
         y = self.y_s
         r = self.r_s
@@ -341,6 +470,13 @@ class design_region():
         return self.dr_xy
 
     def xy_to_rt(self):
+        '''
+        This function returns self.dr_rt given self.dr_xy
+        
+        The function substitutes the x and y (in the self.dr_xy)
+        with the equations for r and theta.
+        
+        '''
         x = self.x_s
         y = self.y_s
         r = self.r_s
@@ -352,6 +488,13 @@ class design_region():
         return self.dr_rt
 
     def zw_to_xy(self):
+        '''
+        This function returns self.dr_xy given self.dr_zw
+        
+        The function substitutes the wn and z (in the self.dr_zw)
+        with the equations for x and y.
+        
+        '''
         x = self.x_s
         y = self.y_s
         r = self.r_s
@@ -368,6 +511,13 @@ class design_region():
         return self.dr_xy
 
     def xy_to_zw(self):
+        '''
+        This function returns self.dr_zw given self.dr_xy
+        
+        The function substitutes the x and y (in the self.dr_xy)
+        with the equations for z and wn.
+        
+        '''
         x = self.x_s
         y = self.y_s
         r = self.r_s
@@ -386,42 +536,10 @@ class design_region():
         )
         return self.dr_zw
 
-    ## general coordinate transformations
-
-    def co_xy_to_rt(self,x,y):
-        r = sqrt(x**2+y**2)
-        if x == 0:
-            t = pi/2
-        else:
-            t = atan(y/x)-pi
-        return r,t
-
-    def co_rt_to_xy(self,r,t):
-        x = r*cos(t)
-        y = r*sin(t)
-        return x,y
-
-    def co_zw_to_rt(self,z,w):
-        r = w
-        t = pi - acos(z)
-        return r,t
-
-    def co_rt_to_zw(self,r,t):
-        w = r
-        z = cos(pi-t)
-        return z,w
-
-    def co_xy_to_zw(self,x,y):
-        r,t = self.co_xy_to_rt(x,y)
-        z,w = self.co_rt_to_zw(r,t)
-        return z,w
-
-    def co_zw_to_xy(self,z,w):
-        r,t = self.co_zw_to_rt(z,w)
-        x,y = self.co_rt_to_xy(r,t)
-        return x,y
 
     ## Parameter to Coordinate Transformations
+    ##unfinished section
+    
     def co_OS_to_z(self, OS):
         z = -ln(OS)/sqrt(pi**2 + ln(OS)**2)
         return z
@@ -448,7 +566,7 @@ class design_region():
         if (r_min != self.r[0]) or (r_max != self.r[1]):
             print('Warning: a previous assignment was more restricted and will be observed.')
         self.r = [self.r_r.as_set().start,self.r_r.as_set().end]
-        self.flagrt=False
+        self.flagrt=False#flag for plotting both rt and xy
 
     def in_rt_to_xy(self):
         i_theta_pi = np.argmin(np.pi-np.array(self.theta))
@@ -468,7 +586,7 @@ class design_region():
         if (y_min != self.y[0]) or (y_max != self.y[1]):
             print('Warning: a previous assignment was more restricted and will be observed.')
         self.y = [self.y_r.as_set().start,self.y_r.as_set().end]
-        self.flagxy=False
+        self.flagxy=False#flag for plotting both rt and xy
 
     ## design region projections to their coordinates
     
@@ -536,6 +654,11 @@ class design_region():
 
     # plot!
     def plot_dr(self):
+        '''
+        This function is used to plot the design region
+        
+        '''
+        #plot based on input
         if self.flagrt==True:
             p = plot_implicit(
                 self.dr_rt,
