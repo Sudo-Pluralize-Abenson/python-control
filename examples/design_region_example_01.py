@@ -20,8 +20,8 @@ dr1 = ct.design_region()
 # set and print some parameters
 
 # dr1.x = [-5,-2]
-dr1.x = [-2,-4]
-dr1.y = [-pi,pi]
+dr1.r = [2,4]
+dr1.theta = [pi/2,pi]
 #dr1.xy = dr1.rt_to_xy()
 #print(dr1.xy)
 

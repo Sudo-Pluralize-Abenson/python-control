@@ -48,6 +48,7 @@ class design_region():
         return self.attribute_getter(attribute)
     @x.setter
     def x(self,value):
+        self.flagxy=True
         # check for valid values
         value = self.normalize_input(value)
         if value[1] > 0:
@@ -78,6 +79,7 @@ class design_region():
         return self.attribute_getter(attribute)
     @y.setter
     def y(self,value):
+        self.flagxy=True
         # check for valid values
         value = self.normalize_input(value)
         #if value[0] < 0:
@@ -106,6 +108,7 @@ class design_region():
         return self.attribute_getter(attribute)
     @r.setter
     def r(self,value):
+        self.flagrt=True
         # check for valid values
         value = self.normalize_input(value)
         if value[0] < 0:
@@ -135,6 +138,7 @@ class design_region():
         return self.attribute_getter(attribute)
     @theta.setter
     def theta(self,value):
+        self.flagrt=True
         # check for valid values
         value = self.normalize_input(value)
         value_in = Interval(*value)
@@ -298,6 +302,8 @@ class design_region():
         self.dr_xy = (self.x_r)&(self.y_r)
         self.dr_rt = (self.r_r)&(self.theta_r)
         self.dr_zw = (self.z_r)&(self.wn_r)
+        self.flagrt=False
+        self.flagxy=False
 
     # methods
     ## design region maps
@@ -442,6 +448,7 @@ class design_region():
         if (r_min != self.r[0]) or (r_max != self.r[1]):
             print('Warning: a previous assignment was more restricted and will be observed.')
         self.r = [self.r_r.as_set().start,self.r_r.as_set().end]
+        self.flagrt=False
 
     def in_rt_to_xy(self):
         i_theta_pi = np.argmin(np.pi-np.array(self.theta))
@@ -461,6 +468,7 @@ class design_region():
         if (y_min != self.y[0]) or (y_max != self.y[1]):
             print('Warning: a previous assignment was more restricted and will be observed.')
         self.y = [self.y_r.as_set().start,self.y_r.as_set().end]
+        self.flagxy=False
 
     ## design region projections to their coordinates
     
@@ -528,11 +536,19 @@ class design_region():
 
     # plot!
     def plot_dr(self):
-        p = plot_implicit(
-            self.dr_xy,
-            x_var=self.x_s,
-            y_var=self.y_s,
-            xlabel='Re',
-            ylabel='Im')
+        if self.flagrt==True:
+            p = plot_implicit(
+                self.dr_rt,
+                x_var=self.r_s,
+                y_var=self.theta_s,
+                xlabel='R',
+                ylabel='Theta')
+        elif self.flagxy==True:
+            p = plot_implicit(
+                self.dr_xy,
+                x_var=self.x_s,
+                y_var=self.y_s,
+                xlabel='Re',
+                ylabel='Im')
         p.show()
 
