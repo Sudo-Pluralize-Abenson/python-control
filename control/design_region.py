@@ -24,7 +24,7 @@ Date (initial): 2 October 2019
 
 # external modules
 import numpy as np
-from sympy import core
+#from sympy import core
 import inspect
 from scipy.optimize import minimize
 import warnings
@@ -36,7 +36,10 @@ __all__ = ['design_region']
 
 # class definition!
 class design_region():
-
+    '''
+    A class to define the design region and print the output.
+    
+    '''
     # attribute getters and setters
     @property
     def x(self):
