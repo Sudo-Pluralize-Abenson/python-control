@@ -140,7 +140,7 @@ Calling the method is sufficient to produce three plots of the allowed parameter
 
 There are currently no arguments or modifications that can be passed to the plots directly. 
 
-*Example, the follwing command will ouput three figures*
+*Example, the following command will ouput three figures*
 
 
 dr1.plot_dr()
