@@ -47,11 +47,19 @@ General use of the design region will follow the procedure below:
 
 1. Create design region instance
 
+*example*
+> dr1 = design_region()
+
 2. Define parameter limitations
     
     While single values are allowed, the purpose of the design region is to provide ranges for all design parameters, such as [15,20].
 
+*example*
+> dr1.r = [2,4]
+
 3. Convert region parameters as desired
+
+> dr1.xy = dr1.rt_to_xy()
 
 4. Plot design region
 
