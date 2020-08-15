@@ -164,7 +164,7 @@ Interval region contains 4 methods/functions that sets the range of interval aft
 
 *example:*
 
-xytort= dr1.in_xy_to_rt(dr1.x)
+xytort= control.design_region().in_xy_to_rt(dr1.x)
 
 print("xy to rt :", xytort)
 
