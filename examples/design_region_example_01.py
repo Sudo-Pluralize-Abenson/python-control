@@ -10,7 +10,7 @@ Date (initial): 3 October 2019
 from control import design_region
 from scipy import pi
 #printing doc string for the class and all the methods
-help(design_region)
+#help(design_region)
 
 #define pi
 #pi=3.14159

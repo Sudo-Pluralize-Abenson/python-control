@@ -199,7 +199,7 @@ class design_region():
             # r to dr_rt
             self.dr_rt = self.dr_rt & self.theta_r
             #if not self.is_calling_method_setter():
-                # avoids loops
+                # #avoids loops
                 # dr_rt to other drs
                 #self.rt_to_xy()
                 #self.rt_to_zw()
