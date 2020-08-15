@@ -70,7 +70,7 @@ class design_region():
         
         if not self.is_calling_method_init(): # if not init call
             # x to dr_xy
-            # self.dr_xy = self.dr_xy & self.x_r
+            self.dr_xy = self.dr_xy & self.x_r
             # if not self.is_calling_method_setter(): #call not from setter
             #     # avoids loops
             #     # dr_xy to other drs
@@ -111,7 +111,7 @@ class design_region():
         
         if not self.is_calling_method_init():
             # y to dr_xy
-            # self.dr_xy = self.dr_xy & self.y_r
+            self.dr_xy = self.dr_xy & self.y_r
             # if not self.is_calling_method_setter():
             #     # avoids loops
             #     # dr_xy to other drs
