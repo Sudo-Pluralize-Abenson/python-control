@@ -8,7 +8,7 @@ Date (initial): 3 October 2019
 """
 #importing the control to get control.design_region()
 from control import design_region
-#from scipy import pi
+#from scipy import pi Supressed our defined pi resulting in no figures
 #printing doc string for the class and all the methods
 #help(design_region)
 
