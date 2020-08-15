@@ -586,15 +586,15 @@ class design_region():
     ## Parameter to Coordinate Transformations
     ##unfinished section
     
-    def co_OS_to_z(self, OS):
-        z = -ln(OS)/sqrt(pi**2 + ln(OS)**2)
+    def co_OS_to_z(self, OS):    # this method converts %OS input to damping ratio           
+        z = -ln(OS)/sqrt(pi**2 + ln(OS)**2) 
         return z
 
-    def co_Ts_to_x(self, Ts):
+    def co_Ts_to_x(self, Ts):    # This method converts settling time input to real part 
         x = -4/Ts
         return x
 
-    def co_TsOS_to_xy(self, Ts, OS):
+    def co_TsOS_to_xy(self, Ts, OS):   # This method finds the imaginary part from settling time and %os input
         x = self.co_Ts_to_x(Ts)
         y = -x*pi/ln(OS)
         return x,y
