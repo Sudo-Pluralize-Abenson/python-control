@@ -23,7 +23,7 @@ Variables and Parameters
     - theta is the anticlockwise angle from the positive real axis to the vector, in radians
 * z, wn:
     - z is short for zeta, the damping ratio in this context
-    - wn is short for omega subscript n, the natural frequency
+    - wn is short for $\omega_n%, the natural frequency
 * OS, Ts, Tr, Tp are in development:
     - OS is the overshoot ratio, not percent overshoot
     - Ts is the settling time
