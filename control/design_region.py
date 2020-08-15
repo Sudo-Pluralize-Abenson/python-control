@@ -223,9 +223,26 @@ class design_region():
         '''
         This is a setter for self.z
         '''
+        self.flagzw=True
+        value = self.normalize_input(value)
+        if value[1] < 0:
+            raise Exception('Damping ratio must be greater than 0. Inputs must be underdamped systems only [0<z<1]')
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
-        
+        if not self.is_calling_method_init():
+            # r to dr_rt
+            self.dr_zw = self.dr_zw & self.z_r
+            #if not self.is_calling_method_setter():
+                # #avoids loops
+                # dr_rt to other drs
+                #self.rt_to_xy()
+                #self.rt_to_zw()
+                # interval maps
+                #self.in_rt_to_xy()
+            # TODO
+        else:
+            self.dr_zw = self.z_r # region exists because x is __init__ialized first
+
     #
     @property
     def wn(self):
@@ -240,9 +257,26 @@ class design_region():
         '''
         This is a setter for self.wn
         '''
+        self.flagzw=True
+        value = self.normalize_input(value)
+        if value[1] < 0:
+            raise Exception('wn must be a positive value')
         the_p = inspect.currentframe().f_code.co_name
         exec("self._%s = %s" % (the_p,self.attribute_setter(value,the_p)))
-        
+        if not self.is_calling_method_init():
+            # r to dr_rt
+            self.dr_zw = self.dr_zw & self.wn_r
+            #if not self.is_calling_method_setter():
+                # #avoids loops
+                # dr_rt to other drs
+                #self.rt_to_xy()
+                #self.rt_to_zw()
+                # interval maps
+                #self.in_rt_to_xy()
+            # TODO
+        else:
+            self.dr_zw = self.dr_zw & self.z_r # region exists because x is __init__ialized first
+
     #
     @property
     def OS(self):
@@ -370,7 +404,7 @@ class design_region():
         initialize instance attributes
         
         _s versions are internal symbolic variables
-        _r versions are internal interval inequalities foreach variable.
+        _r versions are internal interval inequalities for each variable.
         
         These are really _projections_ because they can depend on other variables.
         
@@ -685,7 +719,17 @@ class design_region():
                 y_var=self.y_s,
                 xlabel='Re',
                 ylabel='Im')
+        elif self.flagzw==True:
+            p = plot_implicit(
+                self.dr_zw,
+                x_var=self.z_s,
+                y_var=self.wn_s,
+                xlabel='z',
+                ylabel='wn')
         self.flagxy=False
         self.flagrt=False
+        self.flagzw=False
         p.show()
+
+
 
