@@ -70,7 +70,7 @@ class design_region():
         
         if not self.is_calling_method_init(): # if not init call
             # x to dr_xy
-            self.dr_xy = self.dr_xy & self.x_r
+            # self.dr_xy = self.dr_xy & self.x_r
             # if not self.is_calling_method_setter(): #call not from setter
             #     # avoids loops
             #     # dr_xy to other drs
@@ -111,7 +111,7 @@ class design_region():
         
         if not self.is_calling_method_init():
             # y to dr_xy
-            self.dr_xy = self.dr_xy & self.y_r
+            # self.dr_xy = self.dr_xy & self.y_r
             # if not self.is_calling_method_setter():
             #     # avoids loops
             #     # dr_xy to other drs
@@ -462,10 +462,14 @@ class design_region():
         x = self.x_s
         y = self.y_s
         r = self.r_s
+        if x != 0:
+            y_Div_x = y/x
+        else:
+            y_Div_x = pi/2
         theta = self.theta_s
         self.dr_xy = self.dr_rt.subs(
             {r: sqrt(x**2+y**2),
-             theta: atan(y/x)-pi}
+             theta: atan(y_Div_x)-pi}
         )
         return self.dr_xy
 
@@ -501,12 +505,16 @@ class design_region():
         theta = self.theta_s
         z = self.z_s
         wn = self.wn_s
+        if x != 0:
+            y_Div_x = y/x
+        else:
+            y_Div_x = pi/2
         self.dr_xy = self.dr_zw.subs(
             {wn: r,
              z: cos(pi-theta)}
         ).subs(
             {r: sqrt(x**2+y**2),
-             theta: atan(y/x)-pi}
+             theta: atan(y_Div_x)-pi}
         )
         return self.dr_xy
 
@@ -524,12 +532,17 @@ class design_region():
         theta = self.theta_s
         z = self.z_s
         wn = self.wn_s
+        if x != 0:
+            y_Div_x = y/x
+        else:
+            y_Div_x = pi/2
+
         self.dr_zw = self.dr_xy.subs(
             {x: r*cos(theta),
              y: r*sin(theta)}
         ).subs(
             {r: sqrt(x**2+y**2),
-             theta: atan(y/x)-pi}
+             theta: atan(y_Div_x)-pi}
         ).subs(
             {r: wn,
              theta: pi - acos(z)}
