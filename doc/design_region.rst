@@ -151,7 +151,24 @@ Private Methods and Functions
 
 **Interval Maps**
 
-*Documentation Pending*
+*Purpose:*
+
+Interval region contains 4 methods/functions that sets the range of interval after checking the results from coordinate transformation. They also print appropirate warning messages and sets flag values.  
+
+*List of Functions:*
+
+    - in_xy_to_rt()
+    - in_rt_to_xy()
+    - xy_projector()
+    - rt_projector()
+
+*example:*
+
+xytort= dr1.in_xy_to_rt(dr1.x)
+print("xy to rt :", xytort)
+..Warning: a previous assignment was more restricted and will be observed.
+xy to rt : None
+
 
 **Design Region Projections**
 
