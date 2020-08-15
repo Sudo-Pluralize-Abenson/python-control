@@ -169,6 +169,7 @@ xytort= dr1.in_xy_to_rt(dr1.x)
 print("xy to rt :", xytort)
 
 >Warning: a previous assignment was more restricted and will be observed.
+
 >xy to rt : None
 
 
