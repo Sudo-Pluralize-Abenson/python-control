@@ -125,18 +125,34 @@ print((dr1.co_OS_to_z(0.10)).evalf)
 >"0.591155033798897"
 
 
-**Interval Maps**
+**Plotting**
 
-*Documentation Pending*
+*Purpose*
 
-Design Region Projections 
+This method plots the domain and range of parameters that meet the specified constraints.
 
-*Documentation Pending*
+*Use*
+Calling the method is sufficient to produce three plots of the allowed parameters:
 
-Plotting 
+- real (x) and imaginary (y) coordinates
+- vector magnitude (r) and theta (t)
+- damping ration (z) and natural frequency (w)
 
-*Documentation Pending*
+There are currently no arguments or modifications that can be passed to the plots directly. 
+
+*Example, the follwing command will ouput three figures*
+
+
+dr1.plot_dr()
+
 
 Private Methods and Functions
 =============================
 
+**Interval Maps**
+
+*Documentation Pending*
+
+**Design Region Projections**
+
+*Documentation Pending*
