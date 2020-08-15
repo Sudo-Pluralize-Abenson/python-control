@@ -32,7 +32,7 @@ from sympy import * # update 8/6 : Arif. Fixes error with infinity sign and "Sym
 
 # variables to expose for import
 __all__ = ['design_region'] 
-
+pi=3.14159265358979323846264338327950288419716939937510 
 # class definition!
 class design_region():
     '''
