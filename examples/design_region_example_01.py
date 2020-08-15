@@ -16,7 +16,7 @@ from scipy import pi
 #pi=3.14159
 
 #more digits of pi if needed
-#3.14159265358979323846264338327950288419716939937510 
+pi=3.14159265358979323846264338327950288419716939937510 
 
 # create design_region instance
 dr1 = design_region()
