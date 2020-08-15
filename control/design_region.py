@@ -372,8 +372,7 @@ class design_region():
         _s versions are internal symbolic variables
         _r versions are internal interval inequalities foreach variable.
         
-        These are really _projections_ because they can depend 
-        on other variables.
+        These are really _projections_ because they can depend on other variables.
         
         design regions are in three coordinate systems:
             dr_xy: x,y
