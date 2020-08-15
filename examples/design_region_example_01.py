@@ -35,7 +35,7 @@ dr1 = design_region()
 
 # r and theta test
 
-dr1.r = [2,4]
+dr1.r = [2,4] # must be positive
 dr1.theta = [-2,pi]
 
 # plot design region
@@ -50,7 +50,7 @@ dr1 = design_region()
 
 
 # x and y test
-dr1.x = [-1,-4]
+dr1.x = [-1,-4] # must be negative
 dr1.y = [-3,pi]
 
 # plot design region
