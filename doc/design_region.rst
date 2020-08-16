@@ -180,8 +180,8 @@ Contains 2 methods/function for design_region() class that defines the list of i
 
 *List of Functions:*
   
-     -xy_projector()
+     - xy_projector()
      
-     -rt_projector()
+     - rt_projector()
     
 
