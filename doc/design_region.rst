@@ -153,7 +153,7 @@ Private Methods and Functions
 
 *Purpose:*
 
-Interval region contains 2 methods/functions that sets the range of interval after checking the results from coordinate transformation. They also print appropirate warning messages and sets flag values.  
+Interval region contains 2 methods/functions for design_region() class that sets the range of interval after checking the results from coordinate transformation. They also print appropirate warning messages and sets flag values.  
 
 *List of Functions:*
 
@@ -174,4 +174,13 @@ print("xy to rt :", xytort)
 
 **Design Region Projections**
 
-*Documentation Pending*
+*Purpose:*
+
+Contains 2 methods/function for design_region() class that defines the list of interval values for their specific planes. Returns from these functions are used with plot function to graphically represent controller design region.  
+
+*List of Functions:*
+  
+     -xy_projector()
+     -rt_projector()
+    
+
