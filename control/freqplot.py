@@ -80,7 +80,7 @@ _bode_defaults = {
 
 
 def bode_plot(syslist, omega=None,
-              Plot=True, omega_limits=None, omega_num=None,
+              plot=True, omega_limits=None, omega_num=None,
               margins=None, *args, **kwargs):
     """Bode plot for a system
 
@@ -100,8 +100,8 @@ def bode_plot(syslist, omega=None,
     deg : bool
         If True, plot phase in degrees (else radians).  Default value (True)
         config.defaults['bode.deg']
-    Plot : bool
-        If True, plot magnitude and phase
+    plot : bool
+        If True (default), plot magnitude and phase
     omega_limits: tuple, list, ... of two values
         Limits of the to generate frequency vector.
         If Hz=True the limits are in Hz otherwise in rad/s.
@@ -110,8 +110,10 @@ def bode_plot(syslist, omega=None,
         config.defaults['freqplot.number_of_samples'].
     margins : bool
         If True, plot gain and phase margin.
-    \*args, \**kwargs:
-        Additional options to matplotlib (color, linestyle, etc)
+    *args : `matplotlib` plot positional properties, optional
+        Additional arguments for `matplotlib` plots (color, linestyle, etc)
+    **kwargs : `matplotlib` plot keyword properties, optional
+        Additional keywords (passed to `matplotlib`)
 
     Returns
     -------
@@ -139,7 +141,7 @@ def bode_plot(syslist, omega=None,
 
     2. If a discrete time model is given, the frequency response is plotted
     along the upper branch of the unit circle, using the mapping z = exp(j
-    \omega dt) where omega ranges from 0 to pi/dt and dt is the discrete
+    \\omega dt) where omega ranges from 0 to pi/dt and dt is the discrete
     timebase.  If not timebase is specified (dt = True), dt is set to 1.
 
     Examples
@@ -151,12 +153,20 @@ def bode_plot(syslist, omega=None,
     # Make a copy of the kwargs dictonary since we will modify it
     kwargs = dict(kwargs)
 
+    # Check to see if legacy 'Plot' keyword was used
+    if 'Plot' in kwargs:
+        import warnings
+        warnings.warn("'Plot' keyword is deprecated in bode_plot; use 'plot'",
+                      FutureWarning)
+        # Map 'Plot' keyword to 'plot' keyword
+        plot = kwargs.pop('Plot')
+
     # Get values for params (and pop from list to allow keyword use in plot)
     dB = config._get_param('bode', 'dB', kwargs, _bode_defaults, pop=True)
     deg = config._get_param('bode', 'deg', kwargs, _bode_defaults, pop=True)
     Hz = config._get_param('bode', 'Hz', kwargs, _bode_defaults, pop=True)
     grid = config._get_param('bode', 'grid', kwargs, _bode_defaults, pop=True)
-    Plot = config._get_param('bode', 'grid', Plot, True)
+    plot = config._get_param('bode', 'grid', plot, True)
     margins = config._get_param('bode', 'margins', margins, False)
 
     # If argument was a singleton, turn it into a list
@@ -209,7 +219,7 @@ def bode_plot(syslist, omega=None,
             # Get the dimensions of the current axis, which we will divide up
             # TODO: Not current implemented; just use subplot for now
 
-            if Plot:
+            if plot:
                 nyquistfrq_plot = None
                 if Hz:
                     omega_plot = omega_sys / (2. * math.pi)
@@ -427,12 +437,14 @@ def bode_plot(syslist, omega=None,
     else:
         return mags, phases, omegas
 
+
 #
 # Nyquist plot
 #
 
-def nyquist_plot(syslist, omega=None, Plot=True, color=None,
-                 labelFreq=0, *args, **kwargs):
+def nyquist_plot(syslist, omega=None, plot=True, label_freq=0,
+                 arrowhead_length=0.1, arrowhead_width=0.1,
+                 color=None, *args, **kwargs):
     """
     Nyquist plot for a system
 
@@ -448,10 +460,14 @@ def nyquist_plot(syslist, omega=None, Plot=True, color=None,
         If True, plot magnitude
     color : string
         Used to specify the color of the plot
-    labelFreq : int
+    label_freq : int
         Label every nth frequency on the plot
-    \*args, \**kwargs:
-        Additional options to matplotlib (color, linestyle, etc)
+    arrowhead_width : arrow head width
+    arrowhead_length : arrow head length
+    *args : `matplotlib` plot positional properties, optional
+        Additional arguments for `matplotlib` plots (color, linestyle, etc)
+    **kwargs : `matplotlib` plot keyword properties, optional
+        Additional keywords (passed to `matplotlib`)
 
     Returns
     -------
@@ -468,6 +484,22 @@ def nyquist_plot(syslist, omega=None, Plot=True, color=None,
     >>> real, imag, freq = nyquist_plot(sys)
 
     """
+    # Check to see if legacy 'Plot' keyword was used
+    if 'Plot' in kwargs:
+        import warnings
+        warnings.warn("'Plot' keyword is deprecated in nyquist_plot; "
+                      "use 'plot'", FutureWarning)
+        # Map 'Plot' keyword to 'plot' keyword
+        plot = kwargs.pop('Plot')
+
+    # Check to see if legacy 'labelFreq' keyword was used
+    if 'labelFreq' in kwargs:
+        import warnings
+        warnings.warn("'labelFreq' keyword is deprecated in nyquist_plot; "
+                      "use 'label_freq'", FutureWarning)
+        # Map 'labelFreq' keyword to 'label_freq' keyword
+        label_freq = kwargs.pop('labelFreq')
+
     # If argument was a singleton, turn it into a list
     if not getattr(syslist, '__iter__', False):
         syslist = (syslist,)
@@ -500,26 +532,28 @@ def nyquist_plot(syslist, omega=None, Plot=True, color=None,
             x = sp.multiply(mag, sp.cos(phase))
             y = sp.multiply(mag, sp.sin(phase))
 
-            if Plot:
+            if plot:
                 # Plot the primary curve and mirror image
                 p = plt.plot(x, y, '-', color=color, *args, **kwargs)
                 c = p[0].get_color()
                 ax = plt.gca()
                 # Plot arrow to indicate Nyquist encirclement orientation
                 ax.arrow(x[0], y[0], (x[1]-x[0])/2, (y[1]-y[0])/2, fc=c, ec=c,
-                         head_width=0.2, head_length=0.2)
+                         head_width=arrowhead_width, 
+                         head_length=arrowhead_length)
 
                 plt.plot(x, -y, '-', color=c, *args, **kwargs)
                 ax.arrow(
                     x[-1], -y[-1], (x[-1]-x[-2])/2, (y[-1]-y[-2])/2,
-                    fc=c, ec=c, head_width=0.2, head_length=0.2)
+                    fc=c, ec=c, head_width=arrowhead_width, 
+                    head_length=arrowhead_length)
 
                 # Mark the -1 point
                 plt.plot([-1], [0], 'r+')
 
             # Label the frequencies of the points
-            if labelFreq:
-                ind = slice(None, None, labelFreq)
+            if label_freq:
+                ind = slice(None, None, label_freq)
                 for xpt, ypt, omegapt in zip(x[ind], y[ind], omega[ind]):
                     # Convert to Hz
                     f = omegapt / (2 * sp.pi)
@@ -541,7 +575,7 @@ def nyquist_plot(syslist, omega=None, Plot=True, color=None,
                              str(int(np.round(f / 1000 ** pow1000, 0))) + ' ' +
                              prefix + 'Hz')
 
-    if Plot:
+    if plot:
         ax = plt.gca()
         ax.set_xlabel("Real axis")
         ax.set_ylabel("Imaginary axis")
@@ -549,12 +583,13 @@ def nyquist_plot(syslist, omega=None, Plot=True, color=None,
 
     return x, y, omega
 
+
 #
 # Gang of Four plot
 #
 
 # TODO: think about how (and whether) to handle lists of systems
-def gangof4_plot(P, C, omega=None):
+def gangof4_plot(P, C, omega=None, **kwargs):
     """Plot the "Gang of 4" transfer functions for a system
 
     Generates a 2x2 plot showing the "Gang of 4" sensitivity functions
@@ -566,6 +601,8 @@ def gangof4_plot(P, C, omega=None):
         Linear input/output systems (process and control)
     omega : array
         Range of frequencies (list or bounds) in rad/sec
+    **kwargs : `matplotlib` plot keyword properties, optional
+        Additional keywords (passed to `matplotlib`)
 
     Returns
     -------
@@ -575,58 +612,92 @@ def gangof4_plot(P, C, omega=None):
         # TODO: Add MIMO go4 plots.
         raise NotImplementedError(
             "Gang of four is currently only implemented for SISO systems.")
+
+    # Get the default parameter values
+    dB = config._get_param('bode', 'dB', kwargs, _bode_defaults, pop=True)
+    Hz = config._get_param('bode', 'Hz', kwargs, _bode_defaults, pop=True)
+    grid = config._get_param('bode', 'grid', kwargs, _bode_defaults, pop=True)
+
+    # Compute the senstivity functions
+    L = P * C
+    S = feedback(1, L)
+    T = L * S
+
+    # Select a default range if none is provided
+    # TODO: This needs to be made more intelligent
+    if omega is None:
+        omega = default_frequency_range((P, C, S))
+
+    # Set up the axes with labels so that multiple calls to
+    # gangof4_plot will superimpose the data.  See details in bode_plot.
+    plot_axes = {'t': None, 's': None, 'ps': None, 'cs': None}
+    for ax in plt.gcf().axes:
+        label = ax.get_label()
+        if label.startswith('control-gangof4-'):
+            key = label[len('control-gangof4-'):]
+            if key not in plot_axes:
+                raise RuntimeError(
+                    "unknown gangof4 axis type '{}'".format(label))
+            plot_axes[key] = ax
+
+    # if any of the axes are missing, start from scratch
+    if any((ax is None for ax in plot_axes.values())):
+        plt.clf()
+        plot_axes = {'s': plt.subplot(221, label='control-gangof4-s'),
+                     'ps': plt.subplot(222, label='control-gangof4-ps'),
+                     'cs': plt.subplot(223, label='control-gangof4-cs'),
+                     't': plt.subplot(224, label='control-gangof4-t')}
+
+    #
+    # Plot the four sensitivity functions
+    #
+    omega_plot = omega / (2. * math.pi) if Hz else omega
+
+    # TODO: Need to add in the mag = 1 lines
+    mag_tmp, phase_tmp, omega = S.freqresp(omega)
+    mag = np.squeeze(mag_tmp)
+    if dB:
+        plot_axes['s'].semilogx(omega_plot, 20 * np.log10(mag), **kwargs)
     else:
+        plot_axes['s'].loglog(omega_plot, mag, **kwargs)
+    plot_axes['s'].set_ylabel("$|S|$" + " (dB)" if dB else "")
+    plot_axes['s'].tick_params(labelbottom=False)
+    plot_axes['s'].grid(grid, which='both')
 
-        # Select a default range if none is provided
-        # TODO: This needs to be made more intelligent
-        if omega is None:
-            omega = default_frequency_range((P, C))
+    mag_tmp, phase_tmp, omega = (P * S).freqresp(omega)
+    mag = np.squeeze(mag_tmp)
+    if dB:
+        plot_axes['ps'].semilogx(omega_plot, 20 * np.log10(mag), **kwargs)
+    else:
+        plot_axes['ps'].loglog(omega_plot, mag, **kwargs)
+    plot_axes['ps'].tick_params(labelbottom=False)
+    plot_axes['ps'].set_ylabel("$|PS|$" + " (dB)" if dB else "")
+    plot_axes['ps'].grid(grid, which='both')
 
-        # Compute the senstivity functions
-        L = P * C
-        S = feedback(1, L)
-        T = L * S
+    mag_tmp, phase_tmp, omega = (C * S).freqresp(omega)
+    mag = np.squeeze(mag_tmp)
+    if dB:
+        plot_axes['cs'].semilogx(omega_plot, 20 * np.log10(mag), **kwargs)
+    else:
+        plot_axes['cs'].loglog(omega_plot, mag, **kwargs)
+    plot_axes['cs'].set_xlabel(
+        "Frequency (Hz)" if Hz else "Frequency (rad/sec)")
+    plot_axes['cs'].set_ylabel("$|CS|$" + " (dB)" if dB else "")
+    plot_axes['cs'].grid(grid, which='both')
 
-        # Set up the axes with labels so that multiple calls to
-        # gangof4_plot will superimpose the data.  See details in bode_plot.
-        plot_axes = {'t': None, 's': None, 'ps': None, 'cs': None}
-        for ax in plt.gcf().axes:
-            label = ax.get_label()
-            if label.startswith('control-gangof4-'):
-                key = label[len('control-gangof4-'):]
-                if key not in plot_axes:
-                    raise RuntimeError(
-                        "unknown gangof4 axis type '{}'".format(label))
-                plot_axes[key] = ax
+    mag_tmp, phase_tmp, omega = T.freqresp(omega)
+    mag = np.squeeze(mag_tmp)
+    if dB:
+        plot_axes['t'].semilogx(omega_plot, 20 * np.log10(mag), **kwargs)
+    else:
+        plot_axes['t'].loglog(omega_plot, mag, **kwargs)
+    plot_axes['t'].set_xlabel(
+        "Frequency (Hz)" if Hz else "Frequency (rad/sec)")
+    plot_axes['t'].set_ylabel("$|T|$" + " (dB)" if dB else "")
+    plot_axes['t'].grid(grid, which='both')
 
-        # if any of the axes are missing, start from scratch
-        if any((ax is None for ax in plot_axes.values())):
-            plt.clf()
-            plot_axes = {'t': plt.subplot(221, label='control-gangof4-t'),
-                         'ps': plt.subplot(222, label='control-gangof4-ps'),
-                         'cs': plt.subplot(223, label='control-gangof4-cs'),
-                         's': plt.subplot(224, label='control-gangof4-s')}
+    plt.tight_layout()
 
-        #
-        # Plot the four sensitivity functions
-        #
-
-        # TODO: Need to add in the mag = 1 lines
-        mag_tmp, phase_tmp, omega = T.freqresp(omega)
-        mag = np.squeeze(mag_tmp)
-        plot_axes['t'].loglog(omega, mag)
-
-        mag_tmp, phase_tmp, omega = (P * S).freqresp(omega)
-        mag = np.squeeze(mag_tmp)
-        plot_axes['ps'].loglog(omega, mag)
-
-        mag_tmp, phase_tmp, omega = (C * S).freqresp(omega)
-        mag = np.squeeze(mag_tmp)
-        plot_axes['cs'].loglog(omega, mag)
-
-        mag_tmp, phase_tmp, omega = S.freqresp(omega)
-        mag = np.squeeze(mag_tmp)
-        plot_axes['s'].loglog(omega, mag)
 
 #
 # Utility functions
@@ -724,7 +795,7 @@ def default_frequency_range(syslist, Hz=None, number_of_samples=None,
                 # TODO
                 raise NotImplementedError(
                     "type of system in not implemented now")
-        except:
+        except NotImplementedError:
             pass
 
     # Make sure there is at least one point in the range
@@ -751,21 +822,23 @@ def default_frequency_range(syslist, Hz=None, number_of_samples=None,
 
     # Set the range to be an order of magnitude beyond any features
     if number_of_samples:
-        omega = sp.logspace(
+        omega = np.logspace(
             lsp_min, lsp_max, num=number_of_samples, endpoint=True)
     else:
-        omega = sp.logspace(lsp_min, lsp_max, endpoint=True)
+        omega = np.logspace(lsp_min, lsp_max, endpoint=True)
     return omega
 
+
 #
-# KLD 5/23/11: Two functions to create nice looking labels
+# Utility functions to create nice looking labels (KLD 5/23/11)
 #
 
 def get_pow1000(num):
     """Determine exponent for which significand of a number is within the
     range [1, 1000).
     """
-    # Based on algorithm from http://www.mail-archive.com/matplotlib-users@lists.sourceforge.net/msg14433.html, accessed 2010/11/7
+    # Based on algorithm from http://www.mail-archive.com/
+    # matplotlib-users@lists.sourceforge.net/msg14433.html, accessed 2010/11/7
     # by Jason Heeris 2009/11/18
     from decimal import Decimal
     from math import floor

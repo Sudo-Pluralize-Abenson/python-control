@@ -4,13 +4,14 @@
 # RMM, 1 Jul 2011
 
 import unittest
+import matplotlib.pyplot as plt
 import numpy as np
+from numpy.testing import assert_array_almost_equal
+
 from control.rlocus import root_locus, _RLClickDispatcher
 from control.xferfcn import TransferFunction
 from control.statesp import StateSpace
 from control.bdalg import feedback
-import matplotlib.pyplot as plt
-from control.tests.margin_test import assert_array_almost_equal
 
 
 class TestRootLocus(unittest.TestCase):
@@ -35,19 +36,20 @@ class TestRootLocus(unittest.TestCase):
         """Basic root locus plot"""
         klist = [-1, 0, 1]
         for sys in self.systems:
-            roots, k_out = root_locus(sys, klist, Plot=False)
+            roots, k_out = root_locus(sys, klist, plot=False)
             np.testing.assert_equal(len(roots), len(klist))
             np.testing.assert_array_equal(klist, k_out)
             self.check_cl_poles(sys, roots, klist)
 
     def test_without_gains(self):
         for sys in self.systems:
-            roots, kvect = root_locus(sys, Plot=False)
+            roots, kvect = root_locus(sys, plot=False)
             self.check_cl_poles(sys, roots, kvect)
 
     def test_root_locus_zoom(self):
         """Check the zooming functionality of the Root locus plot"""
         system = TransferFunction([1000], [1, 25, 100, 0])
+        plt.figure()
         root_locus(system)
         fig = plt.gcf()
         ax_rlocus = fig.axes[0]
@@ -68,8 +70,6 @@ class TestRootLocus(unittest.TestCase):
         assert_array_almost_equal(zoom_x,zoom_x_valid)
         assert_array_almost_equal(zoom_y,zoom_y_valid)
 
-def test_suite():
-    return unittest.TestLoader().loadTestsFromTestCase(TestRootLocus)
 
 if __name__ == "__main__":
     unittest.main()

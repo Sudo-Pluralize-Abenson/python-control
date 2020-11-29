@@ -43,35 +43,40 @@
 # RMM, 2 April 2011: modified to work with new LTI structure (see ChangeLog)
 #   * Not tested: should still work on signal.ltisys objects
 #
+# Sawyer B. Fuller (minster@uw.edu) 21 May 2020:
+#   * added compatibility with discrete-time systems.
+#
 # $Id$
 
 # Packages used by this module
 from functools import partial
 import numpy as np
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
-from scipy import array, poly1d, row_stack, zeros_like, real, imag
+from numpy import array, poly1d, row_stack, zeros_like, real, imag
 import scipy.signal             # signal processing toolbox
-import pylab                    # plotting routines
+from .lti import isdtime
 from .xferfcn import _convert_to_transfer_function
 from .exception import ControlMIMONotImplemented
 from .sisotool import _SisotoolUpdate
+from .grid import sgrid, zgrid
 from . import config
 
 __all__ = ['root_locus', 'rlocus']
 
 # Default values for module parameters
 _rlocus_defaults = {
-    'rlocus.grid':True,
-    'rlocus.plotstr':'b' if int(matplotlib.__version__[0]) == 1 else 'C0',
-    'rlocus.PrintGain':True,
-    'rlocus.Plot':True
+    'rlocus.grid': True,
+    'rlocus.plotstr': 'b' if int(mpl.__version__[0]) == 1 else 'C0',
+    'rlocus.print_gain': True,
+    'rlocus.plot': True
 }
 
 
 # Main function: compute a root locus diagram
 def root_locus(sys, kvect=None, xlim=None, ylim=None,
-               plotstr=None, Plot=True, PrintGain=None, grid=None, **kwargs):
+               plotstr=None, plot=True, print_gain=None, grid=None, ax=None, 
+               **kwargs):
 
     """Root locus plot
 
@@ -89,13 +94,15 @@ def root_locus(sys, kvect=None, xlim=None, ylim=None,
         Set limits of x axis, normally with tuple (see matplotlib.axes).
     ylim : tuple or list, optional
         Set limits of y axis, normally with tuple (see matplotlib.axes).
-    Plot : boolean, optional
+    plot : boolean, optional
         If True (default), plot root locus diagram.
-    PrintGain : bool
+    print_gain : bool
         If True (default), report mouse clicks when close to the root locus
         branches, calculate gain, damping and print.
     grid : bool
         If True plot omega-damping grid.  Default is False.
+    ax : Matplotlib axis
+        axis on which to create root locus plot 
 
     Returns
     -------
@@ -104,14 +111,37 @@ def root_locus(sys, kvect=None, xlim=None, ylim=None,
     klist : ndarray or list
         Gains used.  Same as klist keyword argument if provided.
     """
+    # Check to see if legacy 'Plot' keyword was used
+    if 'Plot' in kwargs:
+        import warnings
+        warnings.warn("'Plot' keyword is deprecated in root_locus; "
+                      "use 'plot'", FutureWarning)
+        # Map 'Plot' keyword to 'plot' keyword
+        plot = kwargs.pop('Plot')
+
+    # Check to see if legacy 'PrintGain' keyword was used
+    if 'PrintGain' in kwargs:
+        import warnings
+        warnings.warn("'PrintGain' keyword is deprecated in root_locus; "
+                      "use 'print_gain'", FutureWarning)
+        # Map 'PrintGain' keyword to 'print_gain' keyword
+        print_gain = kwargs.pop('PrintGain')
+
     # Get parameter values
     plotstr = config._get_param('rlocus', 'plotstr', plotstr, _rlocus_defaults)
     grid = config._get_param('rlocus', 'grid', grid, _rlocus_defaults)
-    PrintGain = config._get_param(
-        'rlocus', 'PrintGain', PrintGain, _rlocus_defaults)
+    print_gain = config._get_param(
+        'rlocus', 'print_gain', print_gain, _rlocus_defaults)
 
     # Convert numerator and denominator to polynomials if they aren't
     (nump, denp) = _systopoly1d(sys)
+
+    # if discrete-time system and if xlim and ylim are not given,
+    #  that we a view of the unit circle
+    if xlim is None and isdtime(sys, strict=True):
+        xlim = (-1.2, 1.2)
+    if ylim is None and isdtime(sys, strict=True):
+        xlim = (-1.3, 1.3)
 
     if kvect is None:
         start_mat = _RLFindRoots(nump, denp, [1])
@@ -125,44 +155,39 @@ def root_locus(sys, kvect=None, xlim=None, ylim=None,
     sisotool = False if 'sisotool' not in kwargs else True
 
     # Create the Plot
-    if Plot:
+    if plot:
         if sisotool:
-            f = kwargs['fig']
-            ax = f.axes[1]
-
+            fig = kwargs['fig']
+            ax = fig.axes[1]
         else:
-            figure_number = pylab.get_fignums()
-            figure_title = [
-                pylab.figure(numb).canvas.get_window_title()
-                for numb in figure_number]
-            new_figure_name = "Root Locus"
-            rloc_num = 1
-            while new_figure_name in figure_title:
-                new_figure_name = "Root Locus " + str(rloc_num)
-                rloc_num += 1
-            f = pylab.figure(new_figure_name)
-            ax = pylab.axes()
+            if ax is None: 
+                ax = plt.gca()
+                fig = ax.figure
+                ax.set_title('Root Locus')
 
-        if PrintGain and not sisotool:
-            f.canvas.mpl_connect(
+        if print_gain and not sisotool:
+            fig.canvas.mpl_connect(
                 'button_release_event',
-                partial(_RLClickDispatcher, sys=sys, fig=f,
-                        ax_rlocus=f.axes[0], plotstr=plotstr))
-
+                partial(_RLClickDispatcher, sys=sys, fig=fig,
+                        ax_rlocus=fig.axes[0], plotstr=plotstr))
         elif sisotool:
-            f.axes[1].plot(
+            fig.axes[1].plot(
                 [root.real for root in start_mat],
                 [root.imag for root in start_mat],
                 'm.', marker='s', markersize=8, zorder=20, label='gain_point')
-            f.suptitle(
+            s = start_mat[0][0]
+            if isdtime(sys, strict=True):
+                zeta = -np.cos(np.angle(np.log(s)))
+            else:
+                zeta = -1 * s.real / abs(s)
+            fig.suptitle(
                 "Clicked at: %10.4g%+10.4gj  gain: %10.4g  damp: %10.4g" %
-                (start_mat[0][0].real, start_mat[0][0].imag,
-                 1, -1 * start_mat[0][0].real / abs(start_mat[0][0])),
-                fontsize=12 if int(matplotlib.__version__[0]) == 1 else 10)
-            f.canvas.mpl_connect(
+                (s.real, s.imag, 1, zeta),
+                fontsize=12 if int(mpl.__version__[0]) == 1 else 10)
+            fig.canvas.mpl_connect(
                 'button_release_event',
-                partial(_RLClickDispatcher, sys=sys, fig=f,
-                        ax_rlocus=f.axes[1], plotstr=plotstr,
+                partial(_RLClickDispatcher, sys=sys, fig=fig,
+                        ax_rlocus=fig.axes[1], plotstr=plotstr,
                         sisotool=sisotool,
                         bode_plot_params=kwargs['bode_plot_params'],
                         tvect=kwargs['tvect']))
@@ -190,20 +215,31 @@ def root_locus(sys, kvect=None, xlim=None, ylim=None,
             ax.plot(real(col), imag(col), plotstr, label='rootlocus')
 
         # Set up plot axes and labels
+        ax.set_xlabel('Real')
+        ax.set_ylabel('Imaginary')
+
+        if grid and sisotool:
+            if isdtime(sys, strict=True):
+                zgrid(ax=ax)
+            else:
+                _sgrid_func(f)
+        elif grid:
+            if isdtime(sys, strict=True):
+                zgrid(ax=ax)
+            else:
+                _sgrid_func()
+        else:
+            ax.axhline(0., linestyle=':', color='k', zorder=-20)
+            ax.axvline(0., linestyle=':', color='k', zorder=-20)
+            if isdtime(sys, strict=True):
+                ax.add_patch(plt.Circle((0,0), radius=1.0,
+                     linestyle=':', edgecolor='k', linewidth=1.5,
+                     fill=False, zorder=-20))
+
         if xlim:
             ax.set_xlim(xlim)
         if ylim:
             ax.set_ylim(ylim)
-
-        ax.set_xlabel('Real')
-        ax.set_ylabel('Imaginary')
-        if grid and sisotool:
-            _sgrid_func(f)
-        elif grid:
-            _sgrid_func()
-        else:
-            ax.axhline(0., linestyle=':', color='k', zorder=-20)
-            ax.axvline(0., linestyle=':', color='k')
 
     return mymat, kvect
 
@@ -558,13 +594,18 @@ def _RLFeedbackClicksPoint(event, sys, fig, ax_rlocus, sisotool=False):
     if abs(K.real) > 1e-8 and abs(K.imag / K.real) < gain_tolerance and \
        event.inaxes == ax_rlocus.axes and K.real > 0.:
 
+        if isdtime(sys, strict=True):
+            zeta = -np.cos(np.angle(np.log(s)))
+        else:
+            zeta = -1 * s.real / abs(s)
+
         # Display the parameters in the output window and figure
         print("Clicked at %10.4g%+10.4gj gain %10.4g damp %10.4g" %
-              (s.real, s.imag, K.real, -1 * s.real / abs(s)))
+              (s.real, s.imag, K.real, zeta))
         fig.suptitle(
             "Clicked at: %10.4g%+10.4gj  gain: %10.4g  damp: %10.4g" %
-            (s.real, s.imag, K.real, -1 * s.real / abs(s)),
-            fontsize=12 if int(matplotlib.__version__[0]) == 1 else 10)
+            (s.real, s.imag, K.real, zeta),
+            fontsize=12 if int(mpl.__version__[0]) == 1 else 10)
 
         # Remove the previous line
         _removeLine(label='gain_point', ax=ax_rlocus)
@@ -593,7 +634,7 @@ def _removeLine(label, ax):
 
 def _sgrid_func(fig=None, zeta=None, wn=None):
     if fig is None:
-        fig = pylab.gcf()
+        fig = plt.gcf()
         ax = fig.gca()
     else:
         ax = fig.axes[1]
@@ -607,13 +648,13 @@ def _sgrid_func(fig=None, zeta=None, wn=None):
     if zeta is None:
         zeta = _default_zetas(xlim, ylim)
 
-    angules = []
+    angles = []
     for z in zeta:
         if (z >= 1e-4) and (z <= 1):
-            angules.append(np.pi/2 + np.arcsin(z))
+            angles.append(np.pi/2 + np.arcsin(z))
         else:
             zeta.remove(z)
-    y_over_x = np.tan(angules)
+    y_over_x = np.tan(angles)
 
     # zeta-constant lines
 
@@ -638,14 +679,14 @@ def _sgrid_func(fig=None, zeta=None, wn=None):
     ax.plot([0, 0], [ylim[0], ylim[1]],
             color='gray', linestyle='dashed', linewidth=0.5)
 
-    angules = np.linspace(-90, 90, 20)*np.pi/180
+    angles = np.linspace(-90, 90, 20)*np.pi/180
     if wn is None:
         wn = _default_wn(xlocator(), ylim)
 
     for om in wn:
         if om < 0:
-            yp = np.sin(angules)*np.abs(om)
-            xp = -np.cos(angules)*np.abs(om)
+            yp = np.sin(angles)*np.abs(om)
+            xp = -np.cos(angles)*np.abs(om)
             ax.plot(xp, yp, color='gray',
                     linestyle='dashed', linewidth=0.5)
             an = "%.2f" % -om
@@ -653,15 +694,15 @@ def _sgrid_func(fig=None, zeta=None, wn=None):
 
 
 def _default_zetas(xlim, ylim):
-    """Return default list of dumps coefficients"""
+    """Return default list of damping coefficients"""
     sep1 = -xlim[0]/4
     ang1 = [np.arctan((sep1*i)/ylim[1]) for i in np.arange(1, 4, 1)]
     sep2 = ylim[1] / 3
     ang2 = [np.arctan(-xlim[0]/(ylim[1]-sep2*i)) for i in np.arange(1, 3, 1)]
 
-    angules = np.concatenate((ang1, ang2))
-    angules = np.insert(angules, len(angules), np.pi/2)
-    zeta = np.sin(angules)
+    angles = np.concatenate((ang1, ang2))
+    angles = np.insert(angles, len(angles), np.pi/2)
+    zeta = np.sin(angles)
     return zeta.tolist()
 
 

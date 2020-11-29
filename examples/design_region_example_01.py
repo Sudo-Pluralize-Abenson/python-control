@@ -1,41 +1,71 @@
-""" design_region_example_01.py - using the design_region module and class
+""" 
+design_region_example_01.py - using the design_region module and class
 
-Authors: Rico AR Picone
+Authors: 
+Rico AR Picone, 
+Parth Gogate
 Date (initial): 3 October 2019
 """
+#importing the control to get control.design_region()
 
-import numpy as np
-from sympy import *
-import matplotlib.pyplot as plt
-import sys
-sys.path.append(".") # Adds higher directory to python modules path.
-sys.path.append("..") # Adds higher directory to python modules path.import control as ct
-import control as ct
+# incase someone also has issue importing from control. the following code can be used instead.
+# MODULE_PATH = "C:/Users/USER/Documents/GitHub/python-control/control/__init__.py"
+# MODULE_NAME = "control"
+# import importlib
+# import sys
+# spec = importlib.util.spec_from_file_location(MODULE_NAME, MODULE_PATH)
+# module = importlib.util.module_from_spec(spec)
+# sys.modules[spec.name] = module 
+# spec.loader.exec_module(module)
+from control import design_region
+
+
+#printing doc string for the class and all the methods
+#help(design_region)
+
+#define pi
+pi=3.14159
+
+#more digits of pi if needed
+#pi=3.14159265358979323846264338327950288419716939937510 
 
 # create design_region instance
-dr1 = ct.design_region()
+#dr1 = module.design_region()
+dr1 = design_region()
 
-# print attributes and defaults
-# print(dr1.__dict__)
+# r and theta test
 
-# set and print some parameters
-dr1.OS = 10
-dr1.Tr = [1.3,1.5]
-print(dr1.OS)
-print(dr1.Tr)
+dr1.r = [2,4] # must be positive
+dr1.theta = [-2,pi]
 
-print(dr1.dr_xy)
-print(dr1.dr_rt)
-dr1.x = [-4,-1]
-# dr1.y = [2,6]
-print(dr1.dr_xy) # updated!
-print(dr1.dr_rt) # updated!
-print(dr1.r) # updated!
-print(dr1.theta) # updated!
+# plot design region
+dr1.plot_dr()
 
-dr1.theta = [pi/2,pi] # won't plot after this because we're not properly updating dr_xy
 
-print(dr1.dr_xy)
+############################################################
+#resetting design_region for new parameters
+#need to re-initialize 
+#dr1 = module.design_region()
+dr1 = design_region()
+
+
+# x and y test
+dr1.x = [-1,-4] # must be negative
+dr1.y = [-3,pi]
+
+# plot design region
+dr1.plot_dr()
+
+############################################################
+#resetting design_region for new parameters
+#need to re-initialize 
+#dr1 = module.design_region()
+dr1 = design_region()
+
+# z and wn test.
+
+dr1.z = [0.3,0.8] # must be between 0 and 1 since only underdamped systems are being analysed
+dr1.wn = [0,pi] # must be positive
 
 # plot design region
 dr1.plot_dr()
